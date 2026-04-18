@@ -1329,18 +1329,43 @@ const ThreePLDashboard = () => {
     </div>
   );
 
-  const renderServices = () => (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Services Manager</h1>
-        <p className="text-gray-400 mt-1">Configure your warehouse services and pricing</p>
+  const renderServices = () => {
+    const services = [
+      { name: 'Ambient Storage', desc: '15°C – 25°C dry goods', price: '$12 / pallet / month', active: true },
+      { name: 'Chilled Storage', desc: '2°C – 8°C dairy & produce', price: '$22 / pallet / month', active: true },
+      { name: 'Frozen Storage', desc: '-20°C frozen goods', price: '$32 / pallet / month', active: true },
+      { name: 'Cross-Docking', desc: 'Same-day in/out', price: '$8 / pallet', active: true },
+      { name: 'Pick & Pack', desc: 'Order fulfillment', price: '$1.80 / order', active: false },
+      { name: 'Last-Mile Delivery', desc: 'GCC distribution', price: 'Custom quote', active: false },
+    ];
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Services Manager</h1>
+            <p className="text-gray-400 mt-1">Configure your warehouse services and pricing</p>
+          </div>
+          <button onClick={() => toast.success('Opening new service form')} className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-slate-900 rounded-lg text-sm font-semibold">+ Add Service</button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {services.map((s) => (
+            <div key={s.name} className="rounded-xl border p-5" style={{ background: colors.card, borderColor: colors.border }}>
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-bold text-white">{s.name}</h3>
+                <span className={`text-xs px-2 py-0.5 rounded ${s.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>{s.active ? 'Active' : 'Inactive'}</span>
+              </div>
+              <p className="text-sm text-gray-400 mb-3">{s.desc}</p>
+              <div className="text-amber-400 font-semibold text-sm mb-3">{s.price}</div>
+              <div className="flex gap-2">
+                <button onClick={() => toast.success(`${s.name} settings opened`)} className="flex-1 py-1.5 bg-slate-700/50 hover:bg-slate-700 text-white rounded text-xs">Edit</button>
+                <button onClick={() => toast.success(`${s.name} toggled`)} className="flex-1 py-1.5 bg-slate-700/50 hover:bg-slate-700 text-white rounded text-xs">{s.active ? 'Pause' : 'Enable'}</button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="rounded-xl border p-6 text-center py-12" style={{ background: colors.card, borderColor: colors.border }}>
-        <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-        <p className="text-gray-400">Services management coming soon</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderCertifications = () => (
     <div className="space-y-6">
@@ -1360,28 +1385,139 @@ const ThreePLDashboard = () => {
     </div>
   );
 
-  const renderAnalytics = () => (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Analytics</h1>
-        <p className="text-gray-400 mt-1">Track your warehouse performance</p>
+  const renderAnalytics = () => {
+    const kpis = [
+      { label: 'Monthly Revenue', value: '$47.8K', trend: '+12%' },
+      { label: 'Occupancy Rate', value: '84%', trend: '+6%' },
+      { label: 'Client Retention', value: '92%', trend: '+2%' },
+      { label: 'Pallets Stored', value: '2,148', trend: '+108' },
+    ];
+    const monthly = [
+      { m: 'Nov', v: 32 }, { m: 'Dec', v: 38 }, { m: 'Jan', v: 41 },
+      { m: 'Feb', v: 44 }, { m: 'Mar', v: 46 }, { m: 'Apr', v: 48 },
+    ];
+    const max = Math.max(...monthly.map((m) => m.v));
+    const topProducts = [
+      { name: 'UHT Milk 1L', pallets: 412, client: 'Baladna' },
+      { name: 'Frozen Chicken', pallets: 288, client: 'Americana' },
+      { name: 'Yogurt 500g', pallets: 214, client: 'Almarai' },
+      { name: 'Sunflower Oil', pallets: 182, client: 'Savola' },
+      { name: 'Fresh Dates', pallets: 146, client: 'Al Ain Farms' },
+    ];
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Analytics</h1>
+          <p className="text-gray-400 mt-1">Monthly revenue, occupancy trends, top products stored</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {kpis.map((k) => (
+            <div key={k.label} className="rounded-xl border p-4" style={{ background: colors.card, borderColor: colors.border }}>
+              <div className="text-gray-400 text-xs mb-1">{k.label}</div>
+              <div className="text-2xl font-bold text-white">{k.value}</div>
+              <div className="text-emerald-400 text-xs mt-1">{k.trend}</div>
+            </div>
+          ))}
+        </div>
+        <div className="rounded-xl border p-5" style={{ background: colors.card, borderColor: colors.border }}>
+          <h3 className="text-white font-semibold mb-4">Revenue Trend (last 6 months)</h3>
+          <div className="flex items-end gap-4 h-40">
+            {monthly.map((m) => (
+              <div key={m.m} className="flex-1 flex flex-col items-center gap-2">
+                <div className="w-full bg-gradient-to-t from-[#D4AF37] to-amber-300 rounded-t" style={{ height: `${(m.v / max) * 100}%` }} />
+                <div className="text-xs text-gray-400">{m.m}</div>
+                <div className="text-xs text-white font-semibold">${m.v}K</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl border p-5" style={{ background: colors.card, borderColor: colors.border }}>
+          <h3 className="text-white font-semibold mb-4">Top Products Stored</h3>
+          <div className="divide-y divide-slate-700/50">
+            {topProducts.map((p) => (
+              <div key={p.name} className="flex items-center justify-between py-3">
+                <div>
+                  <div className="text-white text-sm font-medium">{p.name}</div>
+                  <div className="text-xs text-gray-500">Client: {p.client}</div>
+                </div>
+                <div className="text-amber-400 font-semibold text-sm">{p.pallets} pallets</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="rounded-xl border p-6 text-center py-12" style={{ background: colors.card, borderColor: colors.border }}>
-        <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-        <p className="text-gray-400">Analytics dashboard coming soon</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderSettings = () => (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-gray-400 mt-1">Manage your account and preferences</p>
+        <p className="text-gray-400 mt-1">Warehouse info, team members, billing, notifications</p>
       </div>
-      <div className="rounded-xl border p-6 text-center py-12" style={{ background: colors.card, borderColor: colors.border }}>
-        <Settings className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-        <p className="text-gray-400">Settings panel coming soon</p>
+      <div className="rounded-xl border p-5 space-y-4" style={{ background: colors.card, borderColor: colors.border }}>
+        <h3 className="text-white font-semibold">Warehouse Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Warehouse Name</label>
+            <input defaultValue="Gulf Cold Chain Co." className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Location</label>
+            <input defaultValue="Jebel Ali Free Zone, Dubai" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Total Capacity (pallets)</label>
+            <input defaultValue="2,500" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Operating Hours</label>
+            <input defaultValue="24/7" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white text-sm" />
+          </div>
+        </div>
+      </div>
+      <div className="rounded-xl border p-5" style={{ background: colors.card, borderColor: colors.border }}>
+        <h3 className="text-white font-semibold mb-3">Team Members</h3>
+        <div className="space-y-2">
+          {[
+            { name: 'Warehouse Ops Lead', email: 'ops@gulfcoldchain.com', role: 'Admin' },
+            { name: 'Night Shift Manager', email: 'night@gulfcoldchain.com', role: 'Operator' },
+            { name: 'Billing', email: 'billing@gulfcoldchain.com', role: 'Finance' },
+          ].map((m) => (
+            <div key={m.email} className="flex items-center justify-between py-2 border-b border-slate-700/50 last:border-0 text-sm">
+              <div>
+                <span className="text-white">{m.name}</span>
+                <span className="text-gray-500 ml-2">· {m.email} · {m.role}</span>
+              </div>
+              <button onClick={() => toast.success('Member removed')} className="text-red-400 hover:text-red-300">Remove</button>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => toast.success('Invite sent')} className="mt-3 text-sm text-amber-400 hover:text-amber-300">+ Invite Team Member</button>
+      </div>
+      <div className="rounded-xl border p-5 space-y-3" style={{ background: colors.card, borderColor: colors.border }}>
+        <h3 className="text-white font-semibold">Billing</h3>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-300">Current Plan</span>
+          <span className="text-amber-400 font-semibold">Enterprise Warehouse · $499/mo</span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-300">Next Invoice</span>
+          <span className="text-white">May 01, 2026</span>
+        </div>
+        <button onClick={() => toast.success('Opening billing portal')} className="text-sm text-amber-400 hover:text-amber-300">Manage Billing</button>
+      </div>
+      <div className="rounded-xl border p-5 space-y-3" style={{ background: colors.card, borderColor: colors.border }}>
+        <h3 className="text-white font-semibold">Notification Preferences</h3>
+        {['New storage requests', 'Temperature excursions', 'Low capacity alerts', 'Weekly digest'].map((n) => (
+          <label key={n} className="flex items-center gap-3 text-sm text-gray-300">
+            <input type="checkbox" defaultChecked className="w-4 h-4 accent-amber-500" />
+            {n}
+          </label>
+        ))}
+      </div>
+      <div className="flex justify-end">
+        <button onClick={() => toast.success('Settings saved')} className="px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-slate-900 rounded-lg font-semibold text-sm">Save Settings</button>
       </div>
     </div>
   );

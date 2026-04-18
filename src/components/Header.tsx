@@ -458,11 +458,23 @@ const Header = () => {
                     <div style={{ color: '#94A3B8', fontSize: '12px', marginTop: '2px' }}>{user.email}</div>
                   </div>
 
-                  {[
-                    { icon: User, label: 'My Profile', action: () => handleToast('Profile coming soon!') },
-                    { icon: Settings, label: 'Settings', action: () => handleToast('Settings coming soon!') },
-                    { icon: CreditCard, label: 'Billing', action: () => handleToast('Billing coming soon!') },
-                  ].map((item, i) => (
+                  {(() => {
+                    const role = user?.role;
+                    const profilePath = role === 'supplier' ? '/supplier/profile-editor'
+                      : role === '3pl' ? '/3pl/profile'
+                      : role === 'buyer' ? '/buyer/settings'
+                      : null;
+                    const settingsPath = role === 'buyer' ? '/buyer/settings'
+                      : role === 'supplier' ? '/supplier/profile-editor'
+                      : role === '3pl' ? '/3pl/profile'
+                      : role === 'admin' ? '/super-admin'
+                      : null;
+                    return [
+                      { icon: User, label: 'My Profile', action: () => profilePath ? navigate(profilePath) : handleToast('Sign in to view your profile') },
+                      { icon: Settings, label: 'Settings', action: () => settingsPath ? navigate(settingsPath) : handleToast('Sign in to access settings') },
+                      { icon: CreditCard, label: 'Billing', action: () => handleToast('Billing portal opens in your role workspace. Contact billing@brandsbridge.ai for invoices.') },
+                    ];
+                  })().map((item, i) => (
                     <button
                       key={i}
                       onClick={item.action}

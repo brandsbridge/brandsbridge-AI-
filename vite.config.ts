@@ -18,4 +18,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['lucide-react', 'react-hot-toast'],
+          'chart-vendor': ['recharts'],
+          'form-vendor': ['react-hook-form', 'zod'],
+        },
+      },
+    },
+  },
 })

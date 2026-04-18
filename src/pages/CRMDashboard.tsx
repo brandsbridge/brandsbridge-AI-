@@ -552,7 +552,7 @@ const CRMDashboard = () => {
           {/* Left: Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => {}}
+            onClick={() => navigate('/supplier/dashboard')}
           >
             <div className="w-7 h-7 bg-gradient-to-br from-[#D4AF37] to-[#B8962E] rounded-lg flex items-center justify-center">
               <Globe className="w-4 h-4 text-[#0A0F1E]" />

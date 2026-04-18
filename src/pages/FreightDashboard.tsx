@@ -328,6 +328,7 @@ const FreightDashboard = () => {
         { id: 'ai-optimizer', label: 'AI Cargo Optimizer', icon: Bot, badge: 'AI' },
         { id: 'documents', label: 'Documents', icon: FileText },
         { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+        { id: 'settings', label: 'Settings', icon: Settings },
       ]
     }
   ];
@@ -1549,17 +1550,235 @@ const FreightDashboard = () => {
             </div>
           )}
 
-          {/* Placeholder for other menus */}
-          {!['overview', 'inbox', 'public-profile', 'shipments'].includes(activeMenu) && (
-            <div className="flex items-center justify-center h-96">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-[#0C1628] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="w-8 h-8 text-slate-500" />
+          {/* Submitted Quotes */}
+          {activeMenu === 'quotes' && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">Submitted Quotes</h2>
+                <p className="text-slate-400 text-sm mt-1">Quotes you've sent to buyers and suppliers</p>
+              </div>
+              <div className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-[#13233E] text-slate-400 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Quote #</th>
+                      <th className="px-4 py-3 text-left">Route</th>
+                      <th className="px-4 py-3 text-left">Price</th>
+                      <th className="px-4 py-3 text-left">Transit</th>
+                      <th className="px-4 py-3 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#1E3A5F]">
+                    {[
+                      { id: 'Q-4821', route: 'Jeddah → Doha', price: '$2,850', transit: '4 days', status: 'Pending', color: 'text-amber-400' },
+                      { id: 'Q-4820', route: 'Dubai → Riyadh', price: '$1,920', transit: '3 days', status: 'Won', color: 'text-emerald-400' },
+                      { id: 'Q-4819', route: 'Hamad → Jebel Ali', price: '$3,400', transit: '5 days', status: 'Lost', color: 'text-red-400' },
+                      { id: 'Q-4818', route: 'Sohar → Khalifa', price: '$2,100', transit: '2 days', status: 'Pending', color: 'text-amber-400' },
+                    ].map((q) => (
+                      <tr key={q.id} className="hover:bg-[#13233E]/40">
+                        <td className="px-4 py-3 text-white font-semibold">{q.id}</td>
+                        <td className="px-4 py-3 text-slate-300">{q.route}</td>
+                        <td className="px-4 py-3 text-emerald-400 font-semibold">{q.price}</td>
+                        <td className="px-4 py-3 text-slate-400">{q.transit}</td>
+                        <td className={`px-4 py-3 font-semibold ${q.color}`}>{q.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* My Routes */}
+          {activeMenu === 'routes' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white">My Routes</h2>
+                  <p className="text-slate-400 text-sm mt-1">Active lanes you service</p>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {activeMenu.charAt(0).toUpperCase() + activeMenu.slice(1).replace('-', ' ')}
-                </h3>
-                <p className="text-slate-400">This section is coming soon</p>
+                <button onClick={() => toast.success('Opening route builder')} className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-sm font-semibold">+ Add Route</button>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { origin: 'Jebel Ali', dest: 'Hamad Port', frequency: 'Daily', avgRate: '$2,400' },
+                  { origin: 'Jeddah', dest: 'Doha', frequency: '3x / week', avgRate: '$2,900' },
+                  { origin: 'Dubai', dest: 'Riyadh', frequency: 'Weekly', avgRate: '$1,950' },
+                  { origin: 'Sohar', dest: 'Khalifa Port', frequency: '2x / week', avgRate: '$2,100' },
+                ].map((r, idx) => (
+                  <div key={idx} className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-white font-semibold mb-2">
+                      <MapPin className="w-4 h-4 text-blue-400" /> {r.origin} → {r.dest}
+                    </div>
+                    <div className="text-sm text-slate-400">{r.frequency} · Avg rate {r.avgRate}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Container Availability */}
+          {activeMenu === 'containers' && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">Container Availability</h2>
+                <p className="text-slate-400 text-sm mt-1">Equipment inventory by port</p>
+              </div>
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { port: 'Jebel Ali', c20: 124, c40: 86, reefer: 18 },
+                  { port: 'Hamad Port', c20: 62, c40: 40, reefer: 22 },
+                  { port: 'Jeddah', c20: 98, c40: 71, reefer: 14 },
+                  { port: 'Khalifa Port', c20: 45, c40: 28, reefer: 9 },
+                ].map((p) => (
+                  <div key={p.port} className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-4">
+                    <h3 className="text-white font-semibold mb-3">{p.port}</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-slate-300"><span>20ft</span><span className="text-white font-semibold">{p.c20}</span></div>
+                      <div className="flex justify-between text-slate-300"><span>40ft</span><span className="text-white font-semibold">{p.c40}</span></div>
+                      <div className="flex justify-between text-slate-300"><span>Reefer</span><span className="text-emerald-400 font-semibold">{p.reefer}</span></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI Cargo Optimizer */}
+          {activeMenu === 'ai-optimizer' && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-blue-400" /> AI Cargo Optimizer
+                </h2>
+                <p className="text-slate-400 text-sm mt-1">Smart load consolidation recommendations</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6">
+                <h3 className="text-white font-semibold mb-2">Consolidation opportunity detected</h3>
+                <p className="text-slate-300 text-sm mb-4">3 LCL shipments going Jeddah → Doha this week. Combine into 1 x 40ft container to save ~$840.</p>
+                <button onClick={() => toast.success('Optimizer proposal sent to buyers')} className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-sm font-semibold">Apply Optimization</button>
+              </div>
+            </div>
+          )}
+
+          {/* Documents */}
+          {activeMenu === 'documents' && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">Documents</h2>
+                <p className="text-slate-400 text-sm mt-1">Bill of lading, customs docs, rate sheets</p>
+              </div>
+              <div className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl divide-y divide-[#1E3A5F]">
+                {[
+                  { name: 'BOL-2026-0421.pdf', type: 'Bill of Lading', date: 'Apr 18, 2026' },
+                  { name: 'Rate-Sheet-Q2.pdf', type: 'Rate Sheet', date: 'Apr 01, 2026' },
+                  { name: 'Customs-0418.pdf', type: 'Customs Declaration', date: 'Apr 18, 2026' },
+                  { name: 'Insurance-cert.pdf', type: 'Insurance', date: 'Mar 28, 2026' },
+                ].map((d) => (
+                  <div key={d.name} className="flex items-center justify-between px-4 py-3 hover:bg-[#13233E]/40">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-blue-400" />
+                      <div>
+                        <div className="text-white text-sm font-medium">{d.name}</div>
+                        <div className="text-xs text-slate-500">{d.type} · {d.date}</div>
+                      </div>
+                    </div>
+                    <button onClick={() => toast.success(`Downloading ${d.name}`)} className="text-blue-400 text-sm hover:text-blue-300">Download</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Analytics */}
+          {activeMenu === 'analytics' && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">Analytics</h2>
+                <p className="text-slate-400 text-sm mt-1">Revenue, win rate, and lane performance</p>
+              </div>
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'MTD Revenue', value: '$45.2K', trend: '+18%' },
+                  { label: 'Quotes Sent', value: '142', trend: '+9%' },
+                  { label: 'Win Rate', value: '38%', trend: '+4%' },
+                  { label: 'Avg Margin', value: '16.2%', trend: '+1.1%' },
+                ].map((k) => (
+                  <div key={k.label} className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-4">
+                    <div className="text-slate-400 text-xs mb-1">{k.label}</div>
+                    <div className="text-2xl font-bold text-white">{k.value}</div>
+                    <div className="text-emerald-400 text-xs mt-1">{k.trend}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Settings */}
+          {activeMenu === 'settings' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-bold text-white">Settings</h2>
+                <p className="text-slate-400 text-sm mt-1">Company info, API integrations, team</p>
+              </div>
+              <div className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-5 space-y-4">
+                <h3 className="text-white font-semibold">Company Info</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Company Name</label>
+                    <input defaultValue="Gulf Shipping Services" className="w-full px-3 py-2 bg-[#13233E] border border-[#1E3A5F] rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Contact Email</label>
+                    <input defaultValue="shipping@brandsbridge.ai" className="w-full px-3 py-2 bg-[#13233E] border border-[#1E3A5F] rounded-lg text-white text-sm" />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-5 space-y-3">
+                <h3 className="text-white font-semibold">API Integrations</h3>
+                {[
+                  { name: 'Maersk Rates API', connected: true },
+                  { name: 'MSC Schedule API', connected: true },
+                  { name: 'Port Tracker Webhooks', connected: false },
+                ].map((i) => (
+                  <div key={i.name} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">{i.name}</span>
+                    <button onClick={() => toast.success(i.connected ? 'Disconnected' : 'Connection initiated')} className={i.connected ? 'text-red-400 hover:text-red-300' : 'text-emerald-400 hover:text-emerald-300'}>
+                      {i.connected ? 'Disconnect' : 'Connect'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-5 space-y-3">
+                <h3 className="text-white font-semibold">Notification Preferences</h3>
+                {['New quote requests', 'Shipment milestones', 'Weekly performance digest'].map((n) => (
+                  <label key={n} className="flex items-center gap-3 text-sm text-slate-300">
+                    <input type="checkbox" defaultChecked className="w-4 h-4 accent-blue-500" />
+                    {n}
+                  </label>
+                ))}
+              </div>
+              <div className="bg-[#0C1628] border border-[#1E3A5F] rounded-xl p-5">
+                <h3 className="text-white font-semibold mb-3">Team Management</h3>
+                <div className="space-y-2">
+                  {[
+                    { name: 'Gulf Logistics Team', role: 'Admin' },
+                    { name: 'Rashid Al Mansoori', role: 'Dispatcher' },
+                    { name: 'Noor Ahmed', role: 'Accounting' },
+                  ].map((m) => (
+                    <div key={m.name} className="flex items-center justify-between text-sm py-2 border-b border-[#1E3A5F] last:border-0">
+                      <div>
+                        <span className="text-white">{m.name}</span>
+                        <span className="text-slate-500 ml-2">· {m.role}</span>
+                      </div>
+                      <button onClick={() => toast.success('Team member removed')} className="text-red-400 hover:text-red-300">Remove</button>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => toast.success('Invite sent')} className="mt-3 text-blue-400 text-sm hover:text-blue-300">+ Invite Team Member</button>
+              </div>
+              <div className="flex justify-end">
+                <button onClick={() => toast.success('Settings saved')} className="px-5 py-2.5 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-semibold text-sm">Save Settings</button>
               </div>
             </div>
           )}

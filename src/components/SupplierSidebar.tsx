@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Package, FileText, Video,
   Megaphone, Ship, Settings, ChevronLeft, ChevronRight,
-  Package2, Home, LogOut, Globe, Bell, ChevronDown, Flame
+  Package2, Home, LogOut, Globe, Bell, ChevronDown, Flame, Calendar
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -55,6 +55,8 @@ const SupplierSidebar = ({ activePage = 'overview' }: SupplierSidebarProps) => {
       ]
     },
     { id: 'live-deal-room', label: 'Live Deal Room', icon: Video, badge: 'LIVE', path: '/live-deal-room' },
+    { id: 'monthly-expo', label: 'Monthly Expo', icon: Calendar, path: '/live-expo' },
+    { id: 'virtual-booth', label: 'Virtual Booth', icon: Globe, path: '/supplier/profile-editor' },
     {
       id: 'campaigns', label: 'Campaigns', icon: Megaphone,
       children: [
@@ -162,7 +164,6 @@ const SupplierSidebar = ({ activePage = 'overview' }: SupplierSidebarProps) => {
               ) : (
                 <Link
                   to={item.path || '#'}
-                  onClick={() => {}}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
                     activePage === item.id ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`}

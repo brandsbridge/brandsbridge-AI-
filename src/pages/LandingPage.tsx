@@ -62,7 +62,20 @@ const LandingPage = () => {
   };
 
   const handleStartExporting = () => user ? navigate('/supplier/dashboard') : navigate('/register');
-  const handleWatchDemo = () => toast.success('Demo video coming soon!');
+  const [showDemoVideo, setShowDemoVideo] = useState(false);
+  const [showBookDemo, setShowBookDemo] = useState(false);
+  const [demoForm, setDemoForm] = useState({ name: '', email: '', company: '', date: '', message: '' });
+  const handleWatchDemo = () => setShowDemoVideo(true);
+  const handleBookDemo = () => setShowBookDemo(true);
+  const submitDemoRequest = () => {
+    if (!demoForm.name || !demoForm.email) {
+      toast.error('Name and email are required');
+      return;
+    }
+    toast.success(`Demo request received, ${demoForm.name}. We'll email ${demoForm.email} within 24 hours.`);
+    setShowBookDemo(false);
+    setDemoForm({ name: '', email: '', company: '', date: '', message: '' });
+  };
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #020817 0%, #0A0F1E 40%, #0D1A2D 70%, #020817 100%)' }}>
@@ -912,7 +925,7 @@ const LandingPage = () => {
               Get Started Free
               <ArrowRight className="w-5 h-5" />
             </button>
-            <button onClick={() => toast.success('Demo booking feature coming soon!')} className="px-8 py-4 rounded-xl font-semibold text-lg" style={{ background: 'transparent', border: '2px solid white', color: 'white' }}>
+            <button onClick={handleBookDemo} className="px-8 py-4 rounded-xl font-semibold text-lg" style={{ background: 'transparent', border: '2px solid white', color: 'white' }}>
               Book a Demo
             </button>
           </div>
@@ -967,6 +980,55 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {showDemoVideo && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowDemoVideo(false)}>
+          <div className="relative w-full max-w-4xl aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-700" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setShowDemoVideo(false)} className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center text-lg">×</button>
+            <iframe
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              title="Brands Bridge AI Demo"
+              className="w-full h-full"
+              frameBorder={0}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {showBookDemo && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowBookDemo(false)}>
+          <div className="relative w-full max-w-lg bg-slate-900 rounded-xl border border-slate-700 p-6" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setShowBookDemo(false)} className="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center text-lg">×</button>
+            <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>Book a Demo</h3>
+            <p className="text-sm text-slate-400 mb-5">Tell us a little about yourself and we'll reach out within 24 hours.</p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Name *</label>
+                <input type="text" value={demoForm.name} onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Email *</label>
+                <input type="email" value={demoForm.email} onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Company</label>
+                <input type="text" value={demoForm.company} onChange={(e) => setDemoForm({ ...demoForm, company: e.target.value })} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Preferred Date/Time</label>
+                <input type="datetime-local" value={demoForm.date} onChange={(e) => setDemoForm({ ...demoForm, date: e.target.value })} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Message</label>
+                <textarea rows={3} value={demoForm.message} onChange={(e) => setDemoForm({ ...demoForm, message: e.target.value })} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <button onClick={submitDemoRequest} className="w-full py-3 mt-2 rounded-lg font-semibold text-white" style={{ background: 'linear-gradient(135deg, #D4AF37 0%, #B8962E 100%)' }}>Request Demo</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

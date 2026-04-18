@@ -1769,7 +1769,7 @@ const MonthlyExpoSection = () => {
               </div>
             </div>
             <div className="mt-6 flex justify-end">
-              <ActionButton icon={Save} label="Save Settings" onClick={() => {}} variant="primary" />
+              <ActionButton icon={Save} label="Save Settings" onClick={() => toast.success('Settings saved successfully')} variant="primary" />
             </div>
           </div>
 
@@ -2211,7 +2211,7 @@ const MonthlyExpoSection = () => {
 
           {/* Export Historical Data */}
           <div className="flex justify-end">
-            <ActionButton icon={Download} label="Export All Data" onClick={() => {}} variant="secondary" />
+            <ActionButton icon={Download} label="Export All Data" onClick={() => toast.success('Exporting data... will be emailed to you')} variant="secondary" />
           </div>
         </div>
       )}
@@ -3268,6 +3268,385 @@ const LiveRoomsSection = () => (
 );
 
 // ============================================
+// MISSING SECTION COMPONENTS (admin sidebar fills)
+// ============================================
+
+const AdminDataTable = ({ columns, rows }: { columns: string[]; rows: (string | number | JSX.Element)[][] }) => (
+  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+    <table className="w-full">
+      <thead className="bg-slate-700/50">
+        <tr>
+          {columns.map((c) => (
+            <th key={c} className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase">{c}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-700/50">
+        {rows.map((row, i) => (
+          <tr key={i} className="hover:bg-slate-700/30 transition-colors">
+            {row.map((cell, j) => (
+              <td key={j} className="px-4 py-3 text-slate-300 text-sm">{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const verifiedCompaniesData = [
+  { name: 'Almarai Company', country: '🇸🇦 Saudi Arabia', category: 'Dairy', date: 'Jan 12, 2024', kyb: 'Tier 1' },
+  { name: 'Baladna Foods', country: '🇶🇦 Qatar', category: 'Dairy', date: 'Jan 18, 2024', kyb: 'Tier 1' },
+  { name: 'Al Ain Farms', country: '🇦🇪 UAE', category: 'Dairy', date: 'Feb 02, 2024', kyb: 'Tier 2' },
+  { name: 'Americana Foods', country: '🇦🇪 UAE', category: 'Frozen', date: 'Feb 14, 2024', kyb: 'Tier 1' },
+  { name: 'Al Meera Consumer Goods', country: '🇶🇦 Qatar', category: 'Retail', date: 'Feb 21, 2024', kyb: 'Tier 2' },
+  { name: 'OZMO Beverages', country: '🇹🇷 Turkey', category: 'Beverages', date: 'Mar 01, 2024', kyb: 'Tier 1' },
+  { name: 'Savola Group', country: '🇸🇦 Saudi Arabia', category: 'Edible Oils', date: 'Mar 08, 2024', kyb: 'Tier 1' },
+];
+
+const VerifiedCompaniesSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Verified Companies" subtitle="KYB-verified companies on the platform"
+      action={<ActionButton icon={Download} label="Export List" onClick={() => toast.success('Export queued — email on its way')} variant="outline" />} />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={CheckCircle2} label="Total Verified" value="47" subtext="Live on platform" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={TrendingUp} label="This Month" value="8" subtext="+18% vs last month" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={Shield} label="Verification Rate" value="94%" subtext="Applications approved" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={Clock} label="Pending Review" value="3" subtext="Awaiting KYB docs" color="bg-red-500/20 text-red-400" />
+    </div>
+    <AdminDataTable
+      columns={['Company', 'Country', 'Category', 'Verified Date', 'KYB Tier', 'Actions']}
+      rows={verifiedCompaniesData.map((c) => [
+        <span className="text-white font-medium">{c.name}</span>,
+        c.country,
+        c.category,
+        c.date,
+        <span className="text-amber-400">{c.kyb}</span>,
+        <div className="flex gap-2">
+          <button onClick={() => toast.success(`Viewing ${c.name}`)} className="p-1.5 hover:bg-slate-600 rounded text-slate-400 hover:text-white"><Eye className="w-4 h-4" /></button>
+          <button onClick={() => toast.success('Re-verification triggered')} className="p-1.5 hover:bg-slate-600 rounded text-amber-400"><RefreshCw className="w-4 h-4" /></button>
+        </div>,
+      ])}
+    />
+  </div>
+);
+
+const CompanyProfilesSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Company Profiles" subtitle="Browse all public company profiles" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Eye} label="Total Profiles" value="342" subtext="All companies" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={CheckCircle2} label="Claimed" value="198" subtext="58% of total" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={AlertTriangle} label="Unclaimed" value="144" subtext="42% of total" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={TrendingUp} label="Profile Views" value="12.4K" subtext="This week" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <AdminDataTable
+      columns={['Company', 'Country', 'Status', 'Profile Views', 'Inquiries', 'Actions']}
+      rows={companies.slice(0, 8).map((c) => [
+        <span className="text-white font-medium">{c.name}</span>,
+        `${c.countryFlag} ${c.country}`,
+        <StatusBadge status={c.status} />,
+        Math.floor(Math.random() * 500) + 50,
+        Math.floor(Math.random() * 40) + 2,
+        <button onClick={() => toast.success(`Opening ${c.name}`)} className="p-1.5 hover:bg-slate-600 rounded text-slate-400 hover:text-white"><Eye className="w-4 h-4" /></button>,
+      ])}
+    />
+  </div>
+);
+
+const AllUsersSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="All Users" subtitle="Platform-wide user directory" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Users} label="Total Users" value="1,284" subtext="All roles" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={ShoppingCart} label="Buyers" value="428" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={Package} label="Suppliers" value="612" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={Ship} label="Shipping + 3PL" value="244" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <AdminDataTable
+      columns={['Name', 'Role', 'Company', 'Last Active', 'Actions']}
+      rows={[
+        ...sampleBuyers.map((b) => [b.name, <span className="text-blue-400">Buyer</span>, b.company, b.lastActive,
+          <button onClick={() => toast.success(`Opening ${b.name}`)} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>]),
+        ...sampleSuppliers.slice(0, 3).map((s) => [s.name, <span className="text-amber-400">Supplier</span>, s.name, '2h ago',
+          <button onClick={() => toast.success(`Opening ${s.name}`)} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>]),
+      ]}
+    />
+  </div>
+);
+
+const SuspendedUsersSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Suspended Users" subtitle="Accounts blocked from platform access" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Ban} label="Currently Suspended" value="7" color="bg-red-500/20 text-red-400" />
+      <KPICard icon={AlertTriangle} label="Pending Appeal" value="2" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={CheckCircle2} label="Restored This Month" value="3" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={XCircle} label="Permanent Bans" value="12" color="bg-slate-500/20 text-slate-400" />
+    </div>
+    <AdminDataTable
+      columns={['User', 'Reason', 'Suspended Date', 'Reviewed By', 'Actions']}
+      rows={[
+        ['Khalid Ibrahim', 'Spam RFQs', 'Apr 10, 2026', 'admin@brandsbridge.ai',
+          <div className="flex gap-2"><button onClick={() => toast.success('Account restored')} className="text-emerald-400 text-xs">Restore</button><button onClick={() => toast.error('Permanent ban applied')} className="text-red-400 text-xs">Permanent</button></div>],
+        ['Noura Food Trading', 'Fraud flag', 'Apr 08, 2026', 'admin@brandsbridge.ai',
+          <div className="flex gap-2"><button onClick={() => toast.success('Account restored')} className="text-emerald-400 text-xs">Restore</button><button onClick={() => toast.error('Permanent ban applied')} className="text-red-400 text-xs">Permanent</button></div>],
+        ['Gulf Distribution Co.', 'Chargebacks', 'Apr 02, 2026', 'admin@brandsbridge.ai',
+          <div className="flex gap-2"><button onClick={() => toast.success('Account restored')} className="text-emerald-400 text-xs">Restore</button><button onClick={() => toast.error('Permanent ban applied')} className="text-red-400 text-xs">Permanent</button></div>],
+      ]}
+    />
+  </div>
+);
+
+const CargoAuctionsSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Cargo Auctions" subtitle="Live and upcoming cargo listings"
+      action={<ActionButton icon={Plus} label="Create Listing" onClick={() => toast.success('Launching listing wizard')} variant="primary" />} />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Package} label="Active Listings" value="24" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={CheckCircle2} label="Reservations" value="63" subtext="This month" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={DollarSign} label="Auction Revenue" value="$184K" subtext="Last 30 days" color="bg-purple-500/20 text-purple-400" />
+      <KPICard icon={Clock} label="Avg Time to Sell" value="3.2d" color="bg-blue-500/20 text-blue-400" />
+    </div>
+    <AdminDataTable
+      columns={['Cargo', 'Supplier', 'Port', 'Reserved', 'Reserve Price', 'Actions']}
+      rows={[
+        ['UHT Milk — 20ft container', 'Almarai', 'Jebel Ali', '4 / 10', '$22,500',
+          <button onClick={() => toast.success('Opening listing')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+        ['Labneh — 40ft reefer', 'Baladna', 'Hamad Port', '2 / 6', '$48,200',
+          <button onClick={() => toast.success('Opening listing')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+        ['Fresh Dates — 20ft', 'Al Ain Farms', 'Khalifa Port', '6 / 8', '$18,750',
+          <button onClick={() => toast.success('Opening listing')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+        ['Frozen Chicken — 40ft reefer', 'Americana', 'Jeddah Port', '3 / 10', '$52,000',
+          <button onClick={() => toast.success('Opening listing')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+      ]}
+    />
+  </div>
+);
+
+const MarketPricesSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Market Prices" subtitle="Live FMCG commodity benchmarks across GCC"
+      action={<ActionButton icon={RefreshCw} label="Refresh Feed" onClick={() => toast.success('Feed refreshed')} variant="outline" />} />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={BarChart3} label="Tracked SKUs" value="142" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={TrendingUp} label="Rising (30d)" value="37" color="bg-emerald-500/20 text-emerald-400" trend="+3.2%" trendUp />
+      <KPICard icon={TrendingDown} label="Falling (30d)" value="28" color="bg-red-500/20 text-red-400" trend="-2.1%" />
+      <KPICard icon={Globe} label="Data Sources" value="11" subtext="GCC markets" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <AdminDataTable
+      columns={['SKU', 'Category', 'Latest Price', '7d Change', 'Source']}
+      rows={[
+        ['UHT Milk 1L', 'Dairy', '$1.12 / unit', <span className="text-emerald-400">+1.8%</span>, 'GCC avg'],
+        ['Labneh 500g', 'Dairy', '$2.45 / unit', <span className="text-red-400">-0.6%</span>, 'Doha wholesale'],
+        ['Sunflower Oil 5L', 'Edible Oils', '$8.90 / unit', <span className="text-emerald-400">+4.2%</span>, 'Riyadh'],
+        ['Frozen Chicken / kg', 'Frozen', '$3.25 / kg', <span className="text-emerald-400">+0.9%</span>, 'Dubai'],
+        ['Fresh Dates Medjool', 'Produce', '$6.70 / kg', <span className="text-red-400">-1.2%</span>, 'Al Ain'],
+      ]}
+    />
+  </div>
+);
+
+const VirtualBoothsSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Virtual Booths" subtitle="Supplier VR/3D showrooms live on the platform" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Eye} label="Live Booths" value="38" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={Users} label="Visitors Today" value="1,247" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={Clock} label="Avg Dwell Time" value="4m 12s" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={TrendingUp} label="Conversion" value="6.8%" subtext="Visit → inquiry" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <AdminDataTable
+      columns={['Supplier', 'Booth Status', 'Visitors (7d)', 'Inquiries', 'Actions']}
+      rows={[
+        ['Almarai Company', <StatusBadge status="online" />, 412, 28,
+          <button onClick={() => toast.success('Opening booth')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+        ['Baladna Foods', <StatusBadge status="online" />, 318, 19,
+          <button onClick={() => toast.success('Opening booth')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+        ['OZMO Beverages', <StatusBadge status="warning" />, 89, 4,
+          <button onClick={() => toast.success('Opening booth')} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><Eye className="w-4 h-4" /></button>],
+      ]}
+    />
+  </div>
+);
+
+const EmailCampaignsSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Email Campaigns" subtitle="Lifecycle email sends across the platform"
+      action={<ActionButton icon={Send} label="New Campaign" onClick={() => toast.success('Opening composer')} variant="primary" />} />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Mail} label="Sent (30d)" value="48,210" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={Eye} label="Open Rate" value="42.1%" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={ArrowRight} label="Click Rate" value="6.3%" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={XCircle} label="Bounce Rate" value="0.8%" color="bg-red-500/20 text-red-400" />
+    </div>
+    <AdminDataTable
+      columns={['Campaign', 'Audience', 'Sent', 'Opens', 'Clicks', 'Status']}
+      rows={[
+        ['Welcome — Buyer onboarding', 'Buyers', '4,280', '52%', '9.1%', <StatusBadge status="Active" />],
+        ['Monthly Expo — April', 'All', '12,400', '47%', '7.8%', <StatusBadge status="Active" />],
+        ['Claim reminder — Suppliers', 'Unclaimed', '3,120', '39%', '11.2%', <StatusBadge status="Active" />],
+        ['Win-back — dormant buyers', 'Buyers', '940', '28%', '3.4%', <StatusBadge status="Pending" />],
+      ]}
+    />
+  </div>
+);
+
+const AdCampaignsSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Ad Campaigns" subtitle="Paid acquisition across search + social" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={DollarSign} label="Spend (30d)" value="$14,820" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={Users} label="Signups from Ads" value="248" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={Target} label="CPA" value="$59.76" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={TrendingUp} label="Conversion" value="4.2%" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <AdminDataTable
+      columns={['Campaign', 'Channel', 'Spend', 'Leads', 'CPA', 'Status']}
+      rows={[
+        ['FMCG Buyers — GCC', 'Google', '$5,420', 94, '$57.66', <StatusBadge status="Active" />],
+        ['Supplier acquisition — KSA', 'LinkedIn', '$4,200', 62, '$67.74', <StatusBadge status="Active" />],
+        ['Monthly Expo retargeting', 'Meta', '$3,100', 78, '$39.74', <StatusBadge status="Active" />],
+        ['Cargo Auction — UAE', 'Google', '$2,100', 14, '$150.00', <StatusBadge status="Pending" />],
+      ]}
+    />
+  </div>
+);
+
+const DeployToLiveSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Deploy to Live" subtitle="Roll features from beta to production" />
+    <div className="grid grid-cols-3 gap-4">
+      <KPICard icon={Rocket} label="Pending Deploys" value="4" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={CheckCircle2} label="Live This Month" value="12" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={Pause} label="Rolled Back" value="1" color="bg-red-500/20 text-red-400" />
+    </div>
+    <AdminDataTable
+      columns={['Feature', 'Current Stage', 'Coverage', 'Actions']}
+      rows={[
+        ['AI Matchmaking v2', <span className="text-blue-400">Beta</span>, '240 users',
+          <ActionButton icon={Rocket} label="Deploy to All" onClick={() => toast.success('Rolling out to all users')} variant="primary" />],
+        ['Arabic Language', <span className="text-slate-400">Planned</span>, '—',
+          <ActionButton icon={Rocket} label="Deploy to Beta" onClick={() => toast.success('Beta rollout scheduled')} variant="outline" />],
+        ['Stripe Payments', <span className="text-slate-400">Planned</span>, '—',
+          <ActionButton icon={Rocket} label="Deploy to Beta" onClick={() => toast.success('Beta rollout scheduled')} variant="outline" />],
+        ['VR Expo', <span className="text-amber-400">Testing</span>, 'Admin only',
+          <ActionButton icon={Rocket} label="Deploy to Beta" onClick={() => toast.success('Beta rollout scheduled')} variant="outline" />],
+      ]}
+    />
+  </div>
+);
+
+const NotificationsSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Notifications" subtitle="Platform alerts, broadcasts and digests"
+      action={<ActionButton icon={Plus} label="Send Broadcast" onClick={() => toast.success('Opening broadcast composer')} variant="primary" />} />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Bell} label="Sent (7d)" value="18,420" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={Eye} label="Read Rate" value="64%" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={AlertTriangle} label="Critical Alerts" value="2" color="bg-red-500/20 text-red-400" />
+      <KPICard icon={Users} label="Reach" value="1,128" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <div className="space-y-3">
+      {platformAlerts.map((a) => (
+        <div key={a.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
+          <div className={`w-2 h-2 rounded-full mt-2 ${a.type === 'critical' ? 'bg-red-400' : a.type === 'warning' ? 'bg-amber-400' : a.type === 'success' ? 'bg-emerald-400' : 'bg-blue-400'}`} />
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h4 className="text-white font-semibold">{a.title}</h4>
+              <span className="text-xs text-slate-500">{a.timestamp.toLocaleTimeString()}</span>
+            </div>
+            <p className="text-sm text-slate-400 mt-1">{a.description}</p>
+          </div>
+          <button onClick={() => toast.success('Alert acknowledged')} className="text-slate-400 hover:text-white text-xs">Ack</button>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const GrowthAnalyticsSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Growth Analytics" subtitle="Top of funnel, activation, and retention" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Users} label="New Signups (30d)" value="1,204" color="bg-blue-500/20 text-blue-400" trend="+18%" trendUp />
+      <KPICard icon={Activity} label="Activation Rate" value="34%" color="bg-emerald-500/20 text-emerald-400" trend="+4%" trendUp />
+      <KPICard icon={Heart} label="Retention (30d)" value="62%" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={TrendingUp} label="MRR Growth" value="12.4%" color="bg-purple-500/20 text-purple-400" trend="+2.1%" trendUp />
+    </div>
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+      <h3 className="text-white font-semibold mb-4">User Journey Funnel</h3>
+      <div className="space-y-2">
+        {userJourneyFunnel.map((step) => (
+          <div key={step.step} className="flex items-center gap-4">
+            <div className="w-40 text-sm text-slate-300">{step.step}</div>
+            <div className="flex-1 bg-slate-700/50 rounded-full h-3 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-amber-500 to-amber-400" style={{ width: `${step.percentage}%` }} />
+            </div>
+            <div className="w-24 text-right text-sm text-white font-semibold">{step.count.toLocaleString()}</div>
+            <div className="w-16 text-right text-xs text-slate-400">{step.percentage}%</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const MarketIntelligenceSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Market Intelligence" subtitle="Competitor signals and GCC FMCG trends" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Globe} label="Markets Tracked" value="11" color="bg-blue-500/20 text-blue-400" />
+      <KPICard icon={TrendingUp} label="Trending SKUs" value="24" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={AlertTriangle} label="Price Spikes" value="6" color="bg-red-500/20 text-red-400" />
+      <KPICard icon={Signal} label="Buyer Interest Index" value="82" color="bg-purple-500/20 text-purple-400" />
+    </div>
+    <div className="grid grid-cols-2 gap-4">
+      {growthInsights.map((insight) => (
+        <div key={insight.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <h4 className="text-white font-semibold mb-2">{insight.title}</h4>
+          <p className="text-sm text-slate-400 mb-4">{insight.description}</p>
+          <ActionButton label={insight.action} onClick={() => toast.success(`${insight.action} queued`)} variant="outline" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const SecurityAccessSection = () => (
+  <div className="space-y-6">
+    <SectionHeader title="Security & Access" subtitle="Auth sessions, role permissions, audit hooks" />
+    <div className="grid grid-cols-4 gap-4">
+      <KPICard icon={Shield} label="Active Sessions" value="247" color="bg-emerald-500/20 text-emerald-400" />
+      <KPICard icon={AlertTriangle} label="Failed Logins (24h)" value="18" color="bg-amber-500/20 text-amber-400" />
+      <KPICard icon={Ban} label="Blocked IPs" value="4" color="bg-red-500/20 text-red-400" />
+      <KPICard icon={CheckCircle2} label="MFA Coverage" value="78%" color="bg-blue-500/20 text-blue-400" />
+    </div>
+    <AdminDataTable
+      columns={['User', 'Role', 'Last Login', 'IP', 'MFA', 'Actions']}
+      rows={[
+        ['admin@brandsbridge.ai', 'Admin', '2 min ago', '192.168.1.1', <span className="text-emerald-400">✓</span>,
+          <button onClick={() => toast.success('Session revoked')} className="text-red-400 text-xs">Revoke</button>],
+        ['supplier@almarai.com', 'Supplier', '15 min ago', '192.168.1.2', <span className="text-emerald-400">✓</span>,
+          <button onClick={() => toast.success('Session revoked')} className="text-red-400 text-xs">Revoke</button>],
+        ['buyer@lulu.com', 'Buyer', '1 hr ago', '192.168.1.3', <span className="text-amber-400">—</span>,
+          <button onClick={() => toast.success('Session revoked')} className="text-red-400 text-xs">Revoke</button>],
+        ['shipping@gulf.com', 'Shipping', '3 hrs ago', '192.168.1.4', <span className="text-emerald-400">✓</span>,
+          <button onClick={() => toast.success('Session revoked')} className="text-red-400 text-xs">Revoke</button>],
+      ]}
+    />
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+      <h4 className="text-white font-semibold mb-3">Platform Policy</h4>
+      <div className="flex flex-wrap gap-3">
+        <ActionButton icon={Shield} label="Rotate API Keys" onClick={() => toast.success('Keys rotation scheduled')} variant="outline" />
+        <ActionButton icon={RefreshCw} label="Force MFA for Admins" onClick={() => toast.success('Policy updated — MFA required')} variant="primary" />
+        <ActionButton icon={AlertTriangle} label="Run Security Scan" onClick={() => toast.success('Security scan started')} variant="teal" />
+      </div>
+    </div>
+  </div>
+);
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 
@@ -3325,16 +3704,30 @@ export default function SuperAdminOps() {
       case 'companies': return <AllCompaniesSection />;
       case 'upload': return <UploadCompaniesSection />;
       case 'unclaimed': return <UnclaimedProfilesSection />;
+      case 'verified': return <VerifiedCompaniesSection />;
+      case 'profiles': return <CompanyProfilesSection />;
       case 'buyers': return <BuyersSection />;
       case 'suppliers': return <SuppliersSection />;
       case 'shipping': return <ShippingSection />;
+      case 'all-users': return <AllUsersSection />;
+      case 'suspended': return <SuspendedUsersSection />;
       case 'live-rooms': return <LiveRoomsSection />;
+      case 'cargo': return <CargoAuctionsSection />;
+      case 'market': return <MarketPricesSection />;
+      case 'virtual-booths': return <VirtualBoothsSection />;
+      case 'email-campaigns': return <EmailCampaignsSection />;
+      case 'ad-campaigns': return <AdCampaignsSection />;
       case 'monthly-expo': return <MonthlyExpoSection />;
       case 'walkin-buyers': return <WalkinBuyerSection />;
       case 'feature-lab': return <FeatureLabSection />;
       case 'launch-events': return <LaunchEventsSection />;
+      case 'deploy': return <DeployToLiveSection />;
       case 'settings': return <PlatformSettingsSection />;
+      case 'notifications': return <NotificationsSection />;
       case 'revenue': return <RevenueDashboardSection />;
+      case 'analytics': return <GrowthAnalyticsSection />;
+      case 'market-intel': return <MarketIntelligenceSection />;
+      case 'security': return <SecurityAccessSection />;
       case 'activity-logs': return <ActivityLogsSection />;
       case 'system-health': return <SystemHealthSection />;
       default: return <DashboardHome />;

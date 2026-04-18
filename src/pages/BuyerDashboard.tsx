@@ -57,12 +57,12 @@ const BuyerDashboard = () => {
   const menuItems = [
     { id: 'expo', label: 'Expo Hall', icon: Building2, path: '/companies', desc: 'Browse suppliers' },
     { id: 'radar', label: 'Live Radar', icon: Radio, badge: 'LIVE', path: '/buyer/live-radar', desc: 'Real-time opportunities' },
-    { id: 'live-expo', label: 'Live Expo', icon: Calendar, badge: 'MAY 29', desc: 'Virtual trade event' },
+    { id: 'live-expo', label: 'Live Expo', icon: Calendar, badge: 'MAY 29', path: '/live-expo', desc: 'Virtual trade event' },
     { id: 'rfqs', label: 'My RFQs', icon: FileText, path: '/buyer/rfqs', desc: 'Request quotes' },
     { id: 'orders', label: 'My Orders', icon: Package, path: '/buyer/orders', desc: 'Track shipments' },
     { id: 'documents', label: 'Documents', icon: FolderOpen, path: '/buyer/documents', desc: 'Contracts & invoices' },
     { id: 'ai-agent', label: 'AI Sourcing Agent', icon: Bot, badge: 'AI', path: '/buyer/ai-sourcing', desc: 'Smart sourcing' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings', desc: 'Account preferences' },
+    { id: 'settings', label: 'Settings', icon: Settings, path: '/buyer/settings', desc: 'Account preferences' },
   ];
 
   const formatCurrency = (value: number) =>

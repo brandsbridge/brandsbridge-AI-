@@ -41,6 +41,7 @@ import BuyerRFQDetailPage from './pages/BuyerRFQDetailPage';
 import BuyerOrdersPage from './pages/BuyerOrdersPage';
 import BuyerShipmentDetailPage from './pages/BuyerShipmentDetailPage';
 import BuyerAISourcingPage from './pages/BuyerAISourcingPage';
+import BuyerSettingsPage from './pages/BuyerSettingsPage';
 import CarrierDashboard from './pages/CarrierDashboard';
 import ThreePLDashboard from './pages/ThreePLDashboard';
 import ThreePLProfilePage from './pages/ThreePLProfilePage';
@@ -107,7 +108,9 @@ const AppRoutes = () => {
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/market" element={<MarketIndexPage />} />
+          <Route path="/market-prices" element={<MarketIndexPage />} />
           <Route path="/auction" element={<CargoAuctionPage />} />
+          <Route path="/cargo-auction" element={<CargoAuctionPage />} />
 
           {/* Supplier Routes - wrapped with SupplierProvider */}
           <Route path="/supplier/dashboard" element={
@@ -227,6 +230,11 @@ const AppRoutes = () => {
           <Route path="/buyer/ai-sourcing" element={
             <ProtectedRoute allowedRoles={['buyer']}>
               <BuyerAISourcingPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/settings" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerSettingsPage />
             </ProtectedRoute>
           } />
 

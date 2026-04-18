@@ -2034,11 +2034,63 @@ Powered by Brands Bridge AI Core`;
           {activeModule === 'finance' && renderFinance()}
           {activeModule === 'exports' && renderExports()}
           {activeModule === 'settings' && (
-            <div className="flex items-center justify-center h-96">
-              <div className="text-center">
-                <Settings className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">Settings</h2>
-                <p className="text-slate-400">Configuration options coming soon</p>
+            <div className="space-y-6 max-w-3xl">
+              <div>
+                <h2 className="text-2xl font-bold text-white">CRB Hub Configuration</h2>
+                <p className="text-slate-400 mt-1">Invoicing, tax, and company defaults</p>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-4">
+                <h3 className="text-white font-semibold">Financial Defaults</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Default Currency</label>
+                    <select defaultValue="USD" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm">
+                      {['USD', 'EUR', 'AED', 'SAR', 'QAR', 'KWD'].map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Default Tax Rate (%)</label>
+                    <input type="number" defaultValue={5} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Invoice Numbering Format</label>
+                    <input defaultValue="INV-{YYYY}-{####}" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Default Payment Terms</label>
+                    <select defaultValue="NET-30" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm">
+                      {['Prepay', 'NET-15', 'NET-30', 'NET-60', 'NET-90'].map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-4">
+                <h3 className="text-white font-semibold">Company Info for Invoices</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Legal Name</label>
+                    <input defaultValue="Qatar National Import & Export" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Tax ID / VAT Number</label>
+                    <input defaultValue="QA-VAT-00123456" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-slate-400 mb-1">Registered Address</label>
+                    <input defaultValue="West Bay, Doha, Qatar" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Phone</label>
+                    <input defaultValue="+974 4444 0123" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Email</label>
+                    <input defaultValue="finance@qni.qa" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button onClick={() => toast.success('CRB Hub settings saved')} className="px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-slate-900 rounded-lg font-semibold text-sm">Save Configuration</button>
               </div>
             </div>
           )}
