@@ -23,13 +23,15 @@ import {
   Star,
   Send,
   X,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import { companies, Company } from '../data/mockData';
 import MeetingRequestModal from '../components/MeetingRequestModal';
 import EmailInquiryModal from '../components/EmailInquiryModal';
 import BackButton from '../components/BackButton';
 import Breadcrumb from '../components/Breadcrumb';
+import VirtualBoothModal from '../components/VirtualBoothModal';
 
 const CompanyProfilePage = () => {
   const { slug } = useParams();
@@ -37,6 +39,7 @@ const CompanyProfilePage = () => {
   const company = companies.find(c => c.slug === slug || c.name.toLowerCase().replace(/\s+/g, '-') === slug);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [showVirtualBooth, setShowVirtualBooth] = useState(false);
   const [activeTab, setActiveTab] = useState<'about' | 'products' | 'certifications'>('about');
 
   if (!company) {
@@ -202,11 +205,93 @@ const CompanyProfilePage = () => {
         </div>
       </div>
 
+      {/* Unclaimed Profile Banner */}
+      {company.status === 'unclaimed' && (
+        <div className="bg-gradient-to-r from-amber-500/20 to-amber-600/10 border-b border-amber-500/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold">This profile hasn't been claimed by the company yet</div>
+                  <div className="text-amber-300/80 text-sm">Contact information may be incomplete. Are you from {company.name}?</div>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate(`/claim/${company.slug}`)}
+                className="px-6 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-[#0A0F1E] font-semibold rounded-xl hover:from-[#D4AF37]/90 hover:to-[#B8962E]/90 transition-all flex items-center gap-2"
+              >
+                Claim This Profile
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Virtual Booth Button - Prominent */}
+            <button
+              onClick={() => setShowVirtualBooth(true)}
+              style={{
+                background: 'linear-gradient(135deg, #4c1d95, #7c3aed)',
+                padding: '20px 24px',
+                borderRadius: '16px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 8px 24px rgba(124, 58, 237, 0.3)',
+                width: '100%'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(124, 58, 237, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(124, 58, 237, 0.3)';
+              }}
+            >
+              <div style={{
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '12px',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: '32px' }}>🥽</span>
+              </div>
+              <div style={{ flex: 1, textAlign: 'left' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{
+                    background: '#D4AF37',
+                    color: '#050D1A',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    fontFamily: 'Inter'
+                  }}>NEW</span>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontFamily: 'Inter' }}>
+                    Visit this company virtually from your screen
+                  </span>
+                </div>
+                <div style={{ color: 'white', fontWeight: 700, fontSize: '18px', fontFamily: 'Inter' }}>
+                  Enter Virtual Booth →
+                </div>
+              </div>
+            </button>
+
             {/* Action Cards Grid */}
             <div className="grid grid-cols-2 gap-4">
               <button
@@ -509,6 +594,14 @@ const CompanyProfilePage = () => {
           companyId={company.id}
           companyName={company.name}
           companyEmail={company.internationalSalesEmail || company.email}
+        />
+      )}
+
+      {/* Virtual Booth Modal */}
+      {company && showVirtualBooth && (
+        <VirtualBoothModal
+          company={company}
+          onClose={() => setShowVirtualBooth(false)}
         />
       )}
     </div>

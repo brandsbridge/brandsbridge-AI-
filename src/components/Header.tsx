@@ -341,6 +341,67 @@ const Header = () => {
                 <div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '2px', background: '#D4AF37' }} />
               )}
             </Link>
+            {/* VR Experience Link */}
+            <Link to="/vr-experience"
+              onClick={() => setActiveLink('/vr-experience')}
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                color: '#22D3EE',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: 600,
+                borderRadius: '8px',
+                transition: 'all 0.2s ease',
+                background: 'rgba(34, 211, 238, 0.1)',
+                border: '1px solid rgba(34, 211, 238, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'rgba(34, 211, 238, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'rgba(34, 211, 238, 0.1)';
+              }}
+            >
+              🥽 VR 2027
+            </Link>
+            {/* Live Expo Link */}
+            <Link to="/live-expo"
+              onClick={() => setActiveLink('/live-expo')}
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                background: 'rgba(239,68,68,0.2)',
+                border: '1px solid rgba(239,68,68,0.4)',
+                color: '#EF4444',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: 600,
+                borderRadius: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.2)';
+              }}
+            >
+              <span style={{
+                width: '6px',
+                height: '6px',
+                background: '#EF4444',
+                borderRadius: '50%',
+                animation: 'live-pulse 1.5s ease-in-out infinite'
+              }} />
+              LIVE NOW
+            </Link>
           </div>
         )}
 

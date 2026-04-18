@@ -8,8 +8,12 @@ import {
   DollarSign, Clock, Zap, BarChart3, Ship, Play, Package,
   ShoppingCart, Truck, Bot, LineChart, Mail, ChevronRight, Star,
   Sparkles, Video, FileText, Timer, Lock, Anchor,
-  Coins, TrendingDown, ChevronDown, Radio, Zap as Lightning
+  Coins, TrendingDown, ChevronDown, Radio, Zap as Lightning, Calendar
 } from 'lucide-react';
+import ExpoCountdown from '../components/ExpoCountdown';
+import AnnouncementBar from '../components/AnnouncementBar';
+import VRSection from '../components/VRSection';
+import { upcomingExpo, expoPackages, expoTestimonials, formatExpoDate } from '../data/expoData';
 
 const LandingPage = () => {
   const { user } = useAuth();
@@ -64,9 +68,7 @@ const LandingPage = () => {
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #020817 0%, #0A0F1E 40%, #0D1A2D 70%, #020817 100%)' }}>
 
       {/* ========== ANNOUNCEMENT BAR ========== */}
-      <div className="announcement-bar flex items-center justify-center relative px-4">
-        <span>🥽 VR Expo Coming Q3 2025 • Join 500+ companies on waitlist →</span>
-      </div>
+      <AnnouncementBar />
 
       {/* ========== NAVBAR ========== */}
       <nav style={{
@@ -166,6 +168,11 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* ========== VR SECTION ========== */}
+      <div id="vr-section">
+        <VRSection />
+      </div>
+
       {/* ========== STATS BAR ========== */}
       <section className="stats-bar py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -182,6 +189,221 @@ const LandingPage = () => {
                 <div className="text-[#94A3B8]">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========== MONTHLY LIVE EXPO SECTION ========== */}
+      <section className="py-16" style={{ background: 'linear-gradient(135deg, #071120 0%, #0C1829 50%, #071120 100%)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Countdown Banner */}
+          <div className="rounded-2xl p-6 md:p-8 mb-10" style={{ background: 'linear-gradient(135deg, #0B6E8C, #050D1A, #D4AF37)', border: '1px solid rgba(212,175,55,0.3)' }}>
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-full mb-4">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+                <span className="text-red-400 text-sm font-semibold">NEXT LIVE EXPO DAY</span>
+              </div>
+
+              {/* Countdown Timer */}
+              <div className="mb-4">
+                <ExpoCountdown targetDate={`${upcomingExpo.date}T${upcomingExpo.startTime}:00`} />
+              </div>
+
+              <p className="text-white/80 text-lg">
+                {formatExpoDate(upcomingExpo.date)} • {upcomingExpo.startTime}:00 — {upcomingExpo.endTime}:00 ({upcomingExpo.timezone})
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+              <button
+                onClick={() => navigate('/register?role=supplier&expo=true')}
+                className="px-8 py-3 rounded-xl font-bold text-lg flex items-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #D4AF37, #B8962E)', color: '#050D1A' }}
+              >
+                Register as Exhibitor →
+              </button>
+              <button
+                onClick={() => navigate('/register?role=buyer')}
+                className="px-8 py-3 rounded-xl font-semibold text-lg flex items-center gap-2"
+                style={{ background: 'rgba(14,165,201,0.2)', border: '1px solid #0EA5C9', color: '#0EA5C9' }}
+              >
+                Browse as Buyer (Free) →
+              </button>
+            </div>
+
+            {/* Live Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+              <span className="flex items-center gap-2 text-white/80">
+                <Building2 className="w-4 h-4" style={{ color: '#D4AF37' }} />
+                {upcomingExpo.registeredCompanies} companies registered
+              </span>
+              <span className="flex items-center gap-2 text-white/80">
+                <Users className="w-4 h-4" style={{ color: '#0EA5C9' }} />
+                {upcomingExpo.confirmedBuyers} buyers confirmed
+              </span>
+              <span className="flex items-center gap-2 text-white/80">
+                <Radio className="w-4 h-4" style={{ color: '#EF4444' }} />
+                {upcomingExpo.totalRoomsBooked} live rooms ready
+              </span>
+            </div>
+          </div>
+
+          {/* Main Expo Section */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}>
+              <Calendar className="w-4 h-4" />
+              MONTHLY EVENT
+            </div>
+
+            <h2 className="text-4xl lg:text-5xl font-bold mb-4" style={{ fontFamily: 'Syne, sans-serif', color: '#F8FAFC' }}>
+              Brands Bridge Live Expo
+            </h2>
+            <p className="text-2xl font-semibold mb-4" style={{ color: '#D4AF37' }}>
+              The Monthly Global FMCG Trade Day
+            </p>
+            <p className="text-[#94A3B8] max-w-3xl mx-auto text-lg">
+              Every month, hundreds of verified FMCG suppliers, manufacturers, and freight providers go LIVE simultaneously. Buyers browse and negotiate 1-on-1 across dozens of live deal rooms — all in one day, all in one place.
+            </p>
+          </div>
+
+          {/* How It Works - 3 Columns */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* For Suppliers */}
+            <div className="text-center p-8 rounded-2xl" style={{ background: '#0A0F1E', border: '1px solid #1E2D45' }}>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #D4AF37, #B8962E)' }}>
+                <Factory className="w-8 h-8 text-[#050D1A]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">For Suppliers</h3>
+              <p className="text-[#94A3B8] mb-4">Register your team. Choose how many export sellers will join. Each seller gets their own live deal room.</p>
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold" style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37' }}>
+                From $149/slot
+              </div>
+            </div>
+
+            {/* For Buyers */}
+            <div className="text-center p-8 rounded-2xl" style={{ background: '#0A0F1E', border: '1px solid #1E2D45' }}>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0EA5C9, #0B6E8C)' }}>
+                <ShoppingCart className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">For Buyers</h3>
+              <p className="text-[#94A3B8] mb-4">Join any live room. Meet export teams face-to-face. Get quotes and close deals in one session.</p>
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
+                Always FREE
+              </div>
+            </div>
+
+            {/* For Freight */}
+            <div className="text-center p-8 rounded-2xl" style={{ background: '#0A0F1E', border: '1px solid #1E2D45' }}>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}>
+                <Ship className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">For Freight</h3>
+              <p className="text-[#94A3B8] mb-4">Connect with exporters during the expo. Offer freight quotes in real time. Get cargo requests from all exhibitors.</p>
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold" style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}>
+                From $99
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
+            {[
+              { value: '47', label: 'Companies Registered', icon: Building2, color: '#D4AF37' },
+              { value: '312', label: 'Buyers Confirmed', icon: Users, color: '#0EA5C9' },
+              { value: '124', label: 'Live Rooms Ready', icon: Radio, color: '#EF4444' },
+              { value: '28', label: 'Countries', icon: Globe, color: '#8B5CF6' },
+              { value: '$2.4M', label: 'Last Expo Deals', icon: DollarSign, color: '#10B981' },
+            ].map((stat, i) => (
+              <div key={i} className="text-center p-4 rounded-xl" style={{ background: '#0A0F1E', border: '1px solid #1E2D45' }}>
+                <stat.icon className="w-6 h-6 mx-auto mb-2" style={{ color: stat.color }} />
+                <div className="text-2xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: stat.color }}>{stat.value}</div>
+                <div className="text-xs text-[#94A3B8]">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Past Expo Highlights */}
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-white text-center mb-8">What happened at our last expo</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {expoTestimonials.map((testimonial) => (
+                <div key={testimonial.id} className="p-6 rounded-2xl" style={{ background: '#0A0F1E', border: '1px solid #1E2D45' }}>
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4" style={{ color: '#D4AF37', fill: '#D4AF37' }} />)}
+                  </div>
+                  <p className="text-[#94A3B8] mb-4 italic">"{testimonial.quote}"</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}>
+                      {testimonial.author.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold text-sm">{testimonial.author}</div>
+                      <div className="text-[#475569] text-xs">{testimonial.company} {testimonial.flag}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pricing Section */}
+          <div className="mb-8">
+            <h3 className="text-3xl font-bold text-white text-center mb-2">Exhibitor Packages</h3>
+            <p className="text-[#94A3B8] text-center mb-8">How many sellers are joining your team?</p>
+
+            <div className="grid md:grid-cols-4 gap-6">
+              {expoPackages.map((pkg) => (
+                <div
+                  key={pkg.id}
+                  className={`p-6 rounded-2xl relative ${pkg.popular ? 'ring-2 ring-[#D4AF37]' : ''}`}
+                  style={{
+                    background: '#0A0F1E',
+                    border: `1px solid ${pkg.popular ? '#D4AF37' : '#1E2D45'}`
+                  }}
+                >
+                  {pkg.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold" style={{ background: '#D4AF37', color: '#050D1A' }}>
+                      ⭐ Most Popular
+                    </div>
+                  )}
+                  <h4 className="text-xl font-bold text-white mb-1">{pkg.name}</h4>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold" style={{ color: '#D4AF37' }}>${pkg.price}</span>
+                    <span className="text-[#475569] text-sm">/expo</span>
+                  </div>
+                  <ul className="space-y-2 mb-6">
+                    {pkg.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#94A3B8]">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#10B981' }} />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => navigate('/register?role=supplier&expo=true&package=' + pkg.id)}
+                    className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                      pkg.popular
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-[#050D1A] hover:from-amber-300 hover:to-amber-500'
+                        : 'bg-slate-700 text-white hover:bg-slate-600'
+                    }`}
+                  >
+                    Register {pkg.name} →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Annual Discount Banner */}
+          <div className="text-center p-6 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05))', border: '1px solid rgba(212,175,55,0.3)' }}>
+            <p className="text-white text-lg">
+              Subscribe to all 12 monthly expos and <span className="font-bold" style={{ color: '#D4AF37' }}>save 30%</span> — from <span className="font-bold" style={{ color: '#D4AF37' }}>$1,250/year</span>
+            </p>
           </div>
         </div>
       </section>
@@ -620,6 +842,7 @@ const LandingPage = () => {
               { icon: Ship, title: 'Logistics Integration', desc: 'Shipping and freight management' },
               { icon: LineChart, title: 'Market Intelligence', desc: 'Real-time commodity prices' },
               { icon: Mail, title: 'Email Campaigns', desc: 'Reach buyers with targeted emails' },
+              { icon: Video, title: '🥽 Virtual Booths', desc: 'Visit supplier factories virtually in 360°' },
             ].map((feature, i) => (
               <div key={i} className="p-6 rounded-xl transition-colors" style={{ background: '#111827', border: '1px solid #1E2D45' }}>
                 <feature.icon className="w-10 h-10 mb-4" style={{ color: '#D4AF37' }} />

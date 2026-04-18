@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import {
   LayoutDashboard,
   Package,
@@ -73,9 +74,11 @@ import {
   GripVertical,
   SparklesIcon,
   PenLine,
-  ArrowLeftRight
+  ArrowLeftRight,
+  ReceiptIcon
 } from 'lucide-react';
 import SupplierSidebar from '../components/SupplierSidebar';
+import { useGlobalTrade } from '../contexts/GlobalTradeContext';
 
 // ============================================
 // DATA TYPES
@@ -384,6 +387,7 @@ const getStatusColor = (status: string): string => {
 // ============================================
 
 const CRBHub = () => {
+  const { addInvoice, deals: globalDeals, updateDealStatus } = useGlobalTrade();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showCoPilot, setShowCoPilot] = useState(true);
   const [activeModule, setActiveModule] = useState('dashboard');
@@ -463,10 +467,20 @@ const CRBHub = () => {
       const updatedDeals = deals.map(d => d.id === draggedDeal.id ? { ...d, stage: newStage } : d);
       setDeals(updatedDeals);
 
+      // Show toast notification for stage change
+      const stageLabels: Record<string, string> = {
+        new: 'New Leads',
+        qualified: 'Qualified',
+        negotiation: 'Negotiation',
+        closing: 'Closing'
+      };
+      toast.success(`${draggedDeal.companyName} moved to ${stageLabels[newStage]}`);
+
       // Show modal when dropped to Closing
       if (newStage === 'closing') {
         setSelectedDealForReserve(draggedDeal);
         setShowClosingModal(true);
+        toast.success('AI is preparing invoice draft and document checklist');
       }
     }
     setDraggedDeal(null);
@@ -485,12 +499,14 @@ const CRBHub = () => {
     setShowClosingModal(false);
     setShowReserveStockModal(false);
     setSelectedDealForReserve(null);
+    toast.success(`${deal.companyName}: Stock reserved, Proforma Invoice generated!`);
   };
 
   // Handle document generation
   const handleGenerateDocs = (invoice: Invoice) => {
     setSelectedInvoiceForDocs(invoice);
     setShowExportDocsModal(true);
+    toast.success(`Preparing export documents for ${invoice.customerName}`);
   };
 
   // Generate AI Email Draft
@@ -498,6 +514,7 @@ const CRBHub = () => {
     setSelectedLeadForEmail(lead);
     setIsDraftingEmail(true);
     setShowEmailModal(true);
+    toast.loading('AI is drafting personalized email...', { id: 'ai-email' });
 
     // Simulate AI drafting email
     setTimeout(() => {
@@ -525,7 +542,51 @@ Powered by Brands Bridge AI Core`;
 
       setDraftedEmail(emailDraft);
       setIsDraftingEmail(false);
+      toast.success('AI email draft ready!', { id: 'ai-email' });
     }, 2000);
+  };
+
+  // ========== GLOBAL TRADE FLOW HANDLER ==========
+  // When supplier closes a deal, create invoice and notify buyer
+  const handleCloseDeal = (deal: Deal) => {
+    // Update deal status in global context
+    updateDealStatus(deal.id, 'closed');
+
+    // Create invoice in global context (this will notify the buyer)
+    addInvoice({
+      dealId: deal.id,
+      supplierName: 'Golden Dates Co.',
+      buyerName: deal.companyName,
+      product: deal.products.map(p => p.name).join(', '),
+      amount: deal.dealValue,
+      status: 'sent',
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
+    });
+
+    // Also add to local invoices for display
+    const newInvoice: Invoice = {
+      id: `inv-${Date.now()}`,
+      invoiceNumber: `INV-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(4, '0')}`,
+      customerName: deal.companyName,
+      customerCountry: 'International',
+      amount: deal.dealValue,
+      currency: 'USD',
+      status: 'sent',
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      items: deal.products.map(p => ({ name: p.name, quantity: p.quantity, price: 0 })),
+      dealId: deal.id
+    };
+    setInvoices([newInvoice, ...invoices]);
+
+    toast.success(
+      <div>
+        <div className="font-semibold">Deal Closed!</div>
+        <div className="text-sm text-gray-300">{deal.companyName} - ${deal.dealValue.toLocaleString()}</div>
+        <div className="text-sm text-emerald-400 mt-1">Invoice created and sent to buyer</div>
+      </div>,
+      { duration: 5000 }
+    );
   };
 
   // Get score color
@@ -934,6 +995,15 @@ Powered by Brands Bridge AI Core`;
                           >
                             {stage === 'closing' ? 'Reserve Stock' : 'Update'}
                           </button>
+                          {stage === 'closing' && (
+                            <button
+                              onClick={() => handleCloseDeal(deal)}
+                              className="flex-1 py-1.5 px-3 bg-gradient-to-r from-[#D4AF37] to-amber-500 hover:from-amber-400 hover:to-[#D4AF37] text-black font-semibold rounded-lg text-xs transition-all flex items-center justify-center gap-1"
+                            >
+                              <ReceiptIcon className="w-3 h-3" />
+                              Close Deal
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}

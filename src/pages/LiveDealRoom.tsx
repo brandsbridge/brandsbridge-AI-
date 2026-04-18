@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Video,
   VideoOff,
@@ -26,9 +27,11 @@ import {
   AlertCircle,
   TrendingUp,
   Building2,
-  Flag
+  Flag,
+  Loader2
 } from 'lucide-react';
 import SupplierSidebar from '../components/SupplierSidebar';
+import toast from 'react-hot-toast';
 
 // ============================================
 // DATA TYPES
@@ -147,6 +150,16 @@ const MatchScoreBadge = ({ score }: { score: number }) => {
 // ============================================
 
 export default function LiveDealRoom() {
+  const navigate = useNavigate();
+
+  // Live Session State
+  const [isLive, setIsLive] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [showEndSessionModal, setShowEndSessionModal] = useState(false);
+  const [endSessionResult, setEndSessionResult] = useState<'deal_closed' | 'follow_up' | 'not_interested' | null>(null);
+  const [dealValue, setDealValue] = useState('');
+  const [isProcessingEnd, setIsProcessingEnd] = useState(false);
+
   // Session State
   const [sessionTime, setSessionTime] = useState(75 * 60 + 30); // 01:15:30 in seconds
   const [buyersClosedToday, setBuyersClosedToday] = useState(3);
@@ -196,6 +209,16 @@ export default function LiveDealRoom() {
     validity: '7 days'
   });
 
+  // 3PL Invite State
+  const [show3PLInviteModal, setShow3PLInviteModal] = useState(false);
+
+  // 3PL Companies Data
+  const threePLProviders = [
+    { id: '3pl-001', name: 'Gulf Cold Chain Co.', flag: '🇦🇪', city: 'Dubai', services: ['Frozen', 'Chilled', 'Ambient'], available: 760, reliability: 96 },
+    { id: '3pl-002', name: 'Qatar Cool Logistics', flag: '🇶🇦', city: 'Doha', services: ['Frozen', 'Chilled', 'Controlled'], available: 420, reliability: 94 },
+    { id: '3pl-003', name: 'KSA Cold Storage', flag: '🇸🇦', city: 'Riyadh', services: ['Frozen', 'Ambient', 'CrossDock'], available: 1100, reliability: 93 },
+  ];
+
   // Queue State
   const [queue, setQueue] = useState<Buyer[]>(waitingBuyers);
   const [currentBuyer, setCurrentBuyer] = useState<Buyer>({
@@ -235,6 +258,54 @@ export default function LiveDealRoom() {
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Go Live countdown
+  const handleGoLive = () => {
+    setCountdown(3);
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsLive(true);
+          toast.success(`You are live! ${buyersWaiting + 3} buyers are waiting`);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // End Session
+  const handleEndSession = () => {
+    setShowEndSessionModal(true);
+  };
+
+  const confirmEndSession = () => {
+    setIsProcessingEnd(true);
+
+    setTimeout(() => {
+      setIsLive(false);
+      setShowEndSessionModal(false);
+      setCurrentBuyer(waitingBuyers[0]);
+      setQueue(waitingBuyers.slice(1));
+
+      if (endSessionResult === 'deal_closed') {
+        const value = parseInt(dealValue) || 0;
+        setBuyersClosedToday(prev => prev + 1);
+        toast.success(`Deal recorded! $${value.toLocaleString()} added to pipeline`);
+        navigate('/crm');
+      } else if (endSessionResult === 'follow_up') {
+        toast.success('Follow-up scheduled in CRM');
+        navigate('/crm');
+      } else {
+        toast.success('Session ended');
+      }
+
+      setEndSessionResult(null);
+      setDealValue('');
+      setIsProcessingEnd(false);
+    }, 1500);
   };
 
   // Send message
@@ -307,11 +378,6 @@ export default function LiveDealRoom() {
     setChatMessages(prev => [...prev, sysMsg]);
   };
 
-  // End session
-  const handleEndSession = () => {
-    alert('Live session ended. Thank you for your time!');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex">
       {/* Unified Supplier Sidebar */}
@@ -328,14 +394,26 @@ export default function LiveDealRoom() {
             {/* Left: Live Status */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/30">
-                  <PulsingDot />
-                  <span className="text-red-400 font-bold text-lg tracking-wider">LIVE NOW</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Timer className="w-4 h-4" />
-                  <span className="font-mono text-lg text-white">{formatTime(sessionTime)}</span>
-                </div>
+                {isLive ? (
+                  <div className="flex items-center gap-2 bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/30">
+                    <PulsingDot />
+                    <span className="text-red-400 font-bold text-lg tracking-wider">LIVE NOW</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleGoLive}
+                    className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg shadow-lg shadow-red-500/30 transition-all font-bold"
+                  >
+                    <Video className="w-4 h-4" />
+                    GO LIVE
+                  </button>
+                )}
+                {isLive && (
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Timer className="w-4 h-4" />
+                    <span className="font-mono text-lg text-white">{formatTime(sessionTime)}</span>
+                  </div>
+                )}
               </div>
 
               {/* Connection Quality */}
@@ -374,13 +452,23 @@ export default function LiveDealRoom() {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
+              {/* Invite 3PL Button */}
               <button
-                onClick={handleEndSession}
-                className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-5 py-2.5 rounded-lg border border-red-500/30 transition-all font-semibold"
+                onClick={() => setShow3PLInviteModal(true)}
+                className="flex items-center gap-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 px-4 py-2.5 rounded-lg border border-cyan-500/30 transition-all font-semibold"
               >
-                <Phone className="w-4 h-4 rotate-[135deg]" />
-                End Live Session
+                <Building2 className="w-4 h-4" />
+                + Invite Storage Partner
               </button>
+              {isLive && (
+                <button
+                  onClick={handleEndSession}
+                  className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-5 py-2.5 rounded-lg border border-red-500/30 transition-all font-semibold"
+                >
+                  <Phone className="w-4 h-4 rotate-[135deg]" />
+                  End Live Session
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -782,6 +870,103 @@ export default function LiveDealRoom() {
       </div>
 
       {/* ============================================ */}
+      {/* 3PL INVITE MODAL */}
+      {/* ============================================ */}
+      {show3PLInviteModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-cyan-500/30 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-700/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Invite Storage Partner</h3>
+                    <p className="text-sm text-slate-400">Add a 3PL company to finalize storage terms</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShow3PLInviteModal(false)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Current Deal Info */}
+            <div className="p-4 mx-4 mt-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+              <p className="text-sm text-slate-300">
+                You're negotiating with <span className="text-amber-400 font-semibold">{currentBuyer.companyName}</span> for dairy products. Add a storage partner to discuss warehousing and fulfillment.
+              </p>
+            </div>
+
+            {/* 3PL Providers List */}
+            <div className="p-4 space-y-3">
+              <h4 className="text-sm font-semibold text-slate-300">Available 3PL Providers</h4>
+              {threePLProviders.map((provider) => (
+                <div
+                  key={provider.id}
+                  className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-cyan-500/30 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center text-xl">
+                        {provider.flag}
+                      </div>
+                      <div>
+                        <h5 className="text-white font-semibold">{provider.name}</h5>
+                        <p className="text-sm text-slate-400">{provider.city} • {provider.reliability}% AI Reliability</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Services */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {provider.services.map((service) => (
+                      <span key={service} className="px-2 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded text-xs text-cyan-300">
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Capacity */}
+                  <div className="flex items-center justify-between text-sm mb-3">
+                    <span className="text-slate-400">Available Space:</span>
+                    <span className="text-cyan-400 font-semibold">{provider.available} pallets</span>
+                  </div>
+
+                  {/* Invite Button */}
+                  <button
+                    onClick={() => {
+                      setShow3PLInviteModal(false);
+                      alert(`${provider.name} has been invited to the deal room! They will receive a notification to join.`);
+                    }}
+                    className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    Invite to Deal Room
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-700/50">
+              <button
+                onClick={() => setShow3PLInviteModal(false)}
+                className="w-full py-2.5 bg-slate-700 text-slate-300 font-medium rounded-lg hover:bg-slate-600 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================ */}
       {/* QUOTE SENT TOAST */}
       {/* ============================================ */}
       {sentQuotes.length > 0 && (
@@ -793,6 +978,118 @@ export default function LiveDealRoom() {
             <span className="text-emerald-400 font-semibold">Quote Sent Successfully</span>
           </div>
           <p className="text-slate-400 text-sm">{currentBuyer.companyName} received your quote via chat</p>
+        </div>
+      )}
+
+      {/* ============================================ */}
+      {/* GO LIVE COUNTDOWN OVERLAY */}
+      {/* ============================================ */}
+      {countdown > 0 && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-32 h-32 rounded-full bg-red-500/20 border-4 border-red-500 flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <span className="text-6xl font-bold text-white">{countdown}</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Going Live...</h2>
+            <p className="text-slate-400">Buyers are joining your session</p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================ */}
+      {/* LIVE INDICATOR */}
+      {/* ============================================ */}
+      {isLive && countdown === 0 && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-red-500 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg shadow-red-500/50">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+            LIVE
+          </div>
+        </div>
+      )}
+
+      {/* ============================================ */}
+      {/* END SESSION MODAL */}
+      {/* ============================================ */}
+      {showEndSessionModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">End Session with {currentBuyer.companyName}?</h3>
+              <button onClick={() => setShowEndSessionModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {isProcessingEnd ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mx-auto mb-4" />
+                <p className="text-slate-400">Recording session results...</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-slate-400 mb-4">Did you close a deal?</p>
+                <div className="space-y-3 mb-6">
+                  <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    endSessionResult === 'deal_closed' ? 'bg-emerald-500/10 border-emerald-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="result"
+                      checked={endSessionResult === 'deal_closed'}
+                      onChange={() => setEndSessionResult('deal_closed')}
+                      className="w-4 h-4 accent-emerald-500"
+                    />
+                    <div className="flex-1">
+                      <span className="text-white font-medium">Yes, deal closed</span>
+                      {endSessionResult === 'deal_closed' && (
+                        <div className="mt-2">
+                          <input
+                            type="number"
+                            placeholder="Enter deal value ($)"
+                            value={dealValue}
+                            onChange={(e) => setDealValue(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                  <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    endSessionResult === 'follow_up' ? 'bg-blue-500/10 border-blue-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="result"
+                      checked={endSessionResult === 'follow_up'}
+                      onChange={() => setEndSessionResult('follow_up')}
+                      className="w-4 h-4 accent-blue-500"
+                    />
+                    <span className="text-white font-medium">No deal yet — schedule follow-up</span>
+                  </label>
+                  <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    endSessionResult === 'not_interested' ? 'bg-slate-500/10 border-slate-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="result"
+                      checked={endSessionResult === 'not_interested'}
+                      onChange={() => setEndSessionResult('not_interested')}
+                      className="w-4 h-4 accent-slate-500"
+                    />
+                    <span className="text-white font-medium">Not interested</span>
+                  </label>
+                </div>
+                <button
+                  onClick={confirmEndSession}
+                  disabled={!endSessionResult}
+                  className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Confirm & End Session
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
       </div>

@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Package, FileText, Video,
   Megaphone, Ship, Settings, ChevronLeft, ChevronRight,
-  Package2, Home, LogOut, Globe, Bell, ChevronDown
+  Package2, Home, LogOut, Globe, Bell, ChevronDown, Flame
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-type SubMenu = 'pipeline' | 'leads' | 'companies' | 'inventory' | 'finance' | 'export-docs' | 'search-boost' | 'email-catalog' | null;
+type SubMenu = 'pipeline' | 'leads' | 'companies' | 'inventory' | 'finance' | 'export-docs' | 'search-boost' | 'email-catalog' | 'cargo' | null;
 
 interface SupplierSidebarProps {
   activePage?: string;
@@ -63,6 +63,15 @@ const SupplierSidebar = ({ activePage = 'overview' }: SupplierSidebarProps) => {
       ]
     },
     { id: 'logistics', label: 'Logistics', icon: Ship, path: '/logistics' },
+    {
+      id: 'cargo', label: 'Cargo Auction', icon: Flame,
+      children: [
+        { id: 'cargo-listings', label: 'My Listings', path: '/supplier/cargo-auction' },
+        { id: 'cargo-create', label: 'Create New Listing', path: '/supplier/cargo-auction/new' },
+        { id: 'cargo-reservations', label: 'Active Reservations', path: '/supplier/cargo-auction/reservations' },
+        { id: 'cargo-performance', label: 'Performance', path: '/supplier/cargo-auction/stats' },
+      ]
+    },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -119,6 +128,8 @@ const SupplierSidebar = ({ activePage = 'overview' }: SupplierSidebarProps) => {
                           navigatePath = '/crb-hub';
                         } else if (item.id === 'campaigns') {
                           navigatePath = '/supplier/dashboard';
+                        } else if (item.id === 'cargo') {
+                          navigatePath = child.path || '/supplier/cargo-auction';
                         }
 
                         return (

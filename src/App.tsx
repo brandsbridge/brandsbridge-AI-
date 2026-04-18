@@ -1,5 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { BuyerProvider } from './context/BuyerContext';
+import { SupplierProvider } from './context/SupplierContext';
+import { GlobalTradeProvider } from './contexts/GlobalTradeContext';
+import { ContractProvider } from './contexts/ContractContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
@@ -26,6 +30,29 @@ import AboutPage from './pages/AboutPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import ContactPage from './pages/ContactPage';
 import AIAssistant from './components/AIAssistant';
+import SupplierProfileEditor from './pages/SupplierProfileEditor';
+import ClaimProfilePage from './pages/ClaimProfilePage';
+import ExpoPage from './pages/ExpoPage';
+import VRExperiencePage from './pages/VRExperiencePage';
+import BuyerLiveRadar from './pages/BuyerLiveRadar';
+import BuyerDocumentsPage from './pages/BuyerDocumentsPage';
+import BuyerRFQsPage from './pages/BuyerRFQsPage';
+import BuyerRFQDetailPage from './pages/BuyerRFQDetailPage';
+import BuyerOrdersPage from './pages/BuyerOrdersPage';
+import BuyerShipmentDetailPage from './pages/BuyerShipmentDetailPage';
+import BuyerAISourcingPage from './pages/BuyerAISourcingPage';
+import CarrierDashboard from './pages/CarrierDashboard';
+import ThreePLDashboard from './pages/ThreePLDashboard';
+import ThreePLProfilePage from './pages/ThreePLProfilePage';
+import SuggestedSuppliersPage from './pages/SuggestedSuppliersPage';
+import { ContractRoom } from './pages/ContractRoom';
+import LiveStateSync from './components/contract/LiveStateSync';
+
+// Supplier Cargo Auction pages
+import CargoAuctionDashboard from './pages/supplier/CargoAuctionDashboard';
+import CreateCargoListing from './pages/supplier/CreateCargoListing';
+import CargoReservations from './pages/supplier/CargoReservations';
+import CargoPerformance from './pages/supplier/CargoPerformance';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, allowedRoles }: {
@@ -42,7 +69,7 @@ const ProtectedRoute = ({ children, allowedRoles }: {
   return <>{children}</>;
 };
 
-// Inner app (has access to AuthContext)
+// Inner app (has access to AuthContext and BuyerContext)
 const AppRoutes = () => {
   const location = useLocation();
 
@@ -51,12 +78,21 @@ const AppRoutes = () => {
     location.pathname.startsWith('/supplier') ||
     location.pathname.startsWith('/buyer') ||
     location.pathname.startsWith('/freight') ||
-    location.pathname === '/super-admin';
+    location.pathname.startsWith('/carrier') ||
+    location.pathname.startsWith('/3pl') ||
+    location.pathname.startsWith('/contract-room') ||
+    location.pathname === '/super-admin' ||
+    location.pathname === '/crm' ||
+    location.pathname === '/crb-hub' ||
+    location.pathname === '/live-deal-room';
+
+  // Landing page has its own nav bar
+  const isLandingPage = location.pathname === '/';
 
   return (
     <>
-      {/* Header - Always shows except on dashboards */}
-      {!isDashboard && <Header />}
+      {/* Header - Always shows except on dashboards and landing page */}
+      {!isDashboard && !isLandingPage && <Header />}
 
       {/* Content wrapper with padding for fixed header */}
       <div style={{ paddingTop: isDashboard ? '0' : '68px' }}>
@@ -73,34 +109,172 @@ const AppRoutes = () => {
           <Route path="/market" element={<MarketIndexPage />} />
           <Route path="/auction" element={<CargoAuctionPage />} />
 
+          {/* Supplier Routes - wrapped with SupplierProvider */}
           <Route path="/supplier/dashboard" element={
-            <ProtectedRoute allowedRoles={['supplier']}>
-              <SupplierDashboard />
-            </ProtectedRoute>
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <SupplierDashboard />
+              </ProtectedRoute>
+            </SupplierProvider>
           } />
+          <Route path="/supplier/profile-editor" element={
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <SupplierProfileEditor />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/crm" element={
+            <SupplierProvider>
+              <ProtectedRoute>
+                <CRMDashboard />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/crb-hub" element={
+            <SupplierProvider>
+              <ProtectedRoute>
+                <CRBHub />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/live-deal-room" element={
+            <SupplierProvider>
+              <ProtectedRoute>
+                <LiveDealRoom />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+
+          {/* Cargo Auction Supplier Routes */}
+          <Route path="/supplier/cargo-auction" element={
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <CargoAuctionDashboard />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/supplier/cargo-auction/new" element={
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <CreateCargoListing />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/supplier/cargo-auction/edit/:id" element={
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <CreateCargoListing />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/supplier/cargo-auction/reservations" element={
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <CargoReservations />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+          <Route path="/supplier/cargo-auction/stats" element={
+            <SupplierProvider>
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <CargoPerformance />
+              </ProtectedRoute>
+            </SupplierProvider>
+          } />
+
+          <Route path="/claim/:companySlug" element={<ClaimProfilePage />} />
+          <Route path="/expo/:expoId" element={<ExpoPage />} />
+          <Route path="/live-expo" element={<ExpoPage />} />
+          <Route path="/vr-experience" element={<VRExperiencePage />} />
+
+          {/* Buyer Routes - wrapped with BuyerProvider */}
           <Route path="/buyer/dashboard" element={
             <ProtectedRoute allowedRoles={['buyer']}>
               <BuyerDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/buyer/rfqs" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerRFQsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/rfqs/:rfqId" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerRFQDetailPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/orders" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerOrdersPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/orders/:shipmentId" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerShipmentDetailPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/live-radar" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerLiveRadar />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/documents" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerDocumentsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/buyer/ai-sourcing" element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <BuyerAISourcingPage />
+            </ProtectedRoute>
+          } />
+
           <Route path="/freight/dashboard" element={
             <ProtectedRoute allowedRoles={['shipping']}>
               <FreightDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/carrier/dashboard" element={
+            <ProtectedRoute allowedRoles={['carrier']}>
+              <CarrierDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/3pl/dashboard" element={
+            <ProtectedRoute allowedRoles={['3pl']}>
+              <ThreePLDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/3pl/profile" element={
+            <ProtectedRoute allowedRoles={['3pl']}>
+              <ThreePLProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/3pl/suggested" element={
+            <ProtectedRoute allowedRoles={['3pl']}>
+              <SuggestedSuppliersPage />
+            </ProtectedRoute>
+          } />
+
+          {/* Contract Room - Tri-Party Contract Management */}
+          <Route path="/contract-room/:contractId" element={
+            <ContractProvider>
+              <ContractRoom />
+            </ContractProvider>
+          } />
+
+          {/* Live State Sync Demo */}
+          <Route path="/live-state-sync" element={
+            <ContractProvider>
+              <GlobalTradeProvider>
+                <LiveStateSync />
+              </GlobalTradeProvider>
+            </ContractProvider>
+          } />
+
           <Route path="/super-admin" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <SuperAdminOps />
-            </ProtectedRoute>
-          } />
-          <Route path="/crm" element={
-            <ProtectedRoute>
-              <CRMDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/crb-hub" element={
-            <ProtectedRoute>
-              <CRBHub />
             </ProtectedRoute>
           } />
           <Route path="/procurement" element={
@@ -110,11 +284,6 @@ const AppRoutes = () => {
           } />
           <Route path="/logistics" element={
             <LogisticsEcosystem />
-          } />
-          <Route path="/live-deal-room" element={
-            <ProtectedRoute>
-              <LiveDealRoom />
-            </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -153,7 +322,11 @@ function App() {
       />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <BuyerProvider>
+            <GlobalTradeProvider>
+              <AppRoutes />
+            </GlobalTradeProvider>
+          </BuyerProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

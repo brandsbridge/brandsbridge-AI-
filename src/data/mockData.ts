@@ -42,9 +42,80 @@ export interface Company {
   leadTime?: string;
   paymentTerms?: string[];
   shippingPorts?: string[];
-  // Meeting Request System
+  // Virtual Booth Full Data
+  videoId?: string;
+  factoryImage?: string;
+  products?: Product[];
+  milestones?: { year: string; event: string }[];
+  isLive?: boolean;
+  rating?: number;
+  reviewCount?: number;
+  exportCount?: number;
+  monthlyContainers?: number;
+  contactPerson?: {
+    name: string;
+    title: string;
+    photo?: string;
+    languages: string[];
+  };
+  activeCargo?: {
+    product: string;
+    containerType: string;
+    route: string;
+    price: number;
+  };
+  // Additional fields
   internationalSalesEmail?: string;
   googleMeetLink?: string;
+  // Claim System
+  status?: 'claimed' | 'unclaimed';
+  profileViews?: number;
+  pendingInquiries?: number;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  image: string;
+  priceRange: string;
+  unit: string;
+  moq: string;
+  leadTime: string;
+  certifications: string[];
+}
+
+// Meeting Request System
+export interface MeetingRequest {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companySlug: string;
+  // Client Information
+  clientName: string;
+  clientEmail: string;
+  clientCompany: string;
+  clientCountry: string;
+  clientPhone?: string;
+  // Meeting Details
+  preferredDate: string;
+  preferredTime: string;
+  timezone: string;
+  meetingType: 'video' | 'voice';
+  googleMeetLink?: string;
+  // Inquiry
+  productInterest: string;
+  message: string;
+  estimatedVolume?: string;
+  // Status & Timestamps
+  status: MeetingStatus;
+  createdAt: string;
+  updatedAt?: string;
+  confirmedAt?: string;
+  confirmationToken?: string;
+  // Notifications
+  companyNotified: boolean;
+  clientNotified: boolean;
+  adminNotified: boolean;
 }
 
 export interface Category {
@@ -114,25 +185,6 @@ export interface CommodityPrice {
   source: string;
   region: string;
   category: 'dairy' | 'sugar' | 'oil';
-}
-
-export interface CargoAuction {
-  id: string;
-  sellerId: string;
-  sellerName: string;
-  productName: string;
-  productImage: string;
-  quantity: string;
-  containerType: string;
-  originPort: string;
-  targetMarkets: string[];
-  destinationPorts: { port: string; price: number }[];
-  minDeposit: number;
-  depositPercent: number;
-  expiresAt: string;
-  status: 'active' | 'reserved' | 'sold' | 'expired';
-  certifications: string[];
-  specifications: string;
 }
 
 // ============================================
@@ -220,6 +272,62 @@ export interface AgentCapability {
   name: string;
   description: string;
   phase: 'mvp' | 'advanced';
+}
+
+// Walk-in Buyer Interface (no account required)
+export interface WalkinBuyer {
+  id: string;
+  name: string;
+  company: string;
+  country: string;
+  countryFlag: string;
+  whatsapp: string;
+  email: string;
+  products: string[];
+  targetCountries: string[];
+  registrationTime: string;
+  checkedIn: boolean;
+  checkInTime?: string;
+  meetingsHeld: number;
+  cardsCollected: number;
+  notes?: string;
+}
+
+// Pre-Registered Buyer Interface
+export interface PreRegisteredBuyer {
+  id: string;
+  name: string;
+  company: string;
+  country: string;
+  countryFlag: string;
+  email: string;
+  whatsapp: string;
+  productInterests: string[];
+  targetCountries: string[];
+  registrationDate: string;
+  status: 'confirmed' | 'pending' | 'attended' | 'no-show';
+  meetingsScheduled: number;
+  meetingsCompleted: number;
+  attendedSessions: string[];
+}
+
+// Expo Room Status
+export interface ExpoRoom {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companyFlag: string;
+  sellerName: string;
+  sellerTitle: string;
+  sellerLanguages: string[];
+  products: string[];
+  status: 'available' | 'busy' | 'full' | 'live' | 'ended' | 'queued';
+  waitingCount: number;
+  estimatedWait: number; // minutes
+  accessCode: string;
+  totalMeetings: number;
+  totalDeals: number;
+  dealValue: number;
 }
 
 // Agent Definitions with Capabilities
@@ -457,7 +565,34 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-15',
     boothNumber: 'QA-001', minOrderValue: '$10,000', leadTime: '7-14 days',
-    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Doha', 'Hamad Port']
+    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Doha', 'Hamad Port'],
+    // Virtual Booth Data
+    videoId: 'kU6FGkSBmvE',
+    factoryImage: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=1200',
+    products: [
+      { id: '1', name: 'Premium Dates - 1kg Pack', image: 'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400', priceRange: '$8.50 - $10.00', unit: 'per case (12kg)', moq: '100 cases', leadTime: '7-14 days', certifications: ['Halal', 'ISO 22000'] },
+      { id: '2', name: 'Arabic Coffee Blend - 500g', image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400', priceRange: '$12.00 - $15.00', unit: 'per case (24 units)', moq: '50 cases', leadTime: '7-14 days', certifications: ['Halal'] },
+      { id: '3', name: 'Rose Water - 1L Glass', image: 'https://images.unsplash.com/photo-1595257841889-eca2678454e2?w=400', priceRange: '$6.00 - $8.00', unit: 'per case (12 units)', moq: '100 cases', leadTime: '14-21 days', certifications: ['Halal', 'Organic'] },
+      { id: '4', name: 'Mixed Nuts - 1kg Premium', image: 'https://images.unsplash.com/photo-1536591375509-e5b6c5d76c5d?w=400', priceRange: '$18.00 - $22.00', unit: 'per case (10kg)', moq: '50 cases', leadTime: '14-21 days', certifications: ['Halal', 'ISO 22000'] },
+      { id: '5', name: 'Tahini Paste - 1kg', image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400', priceRange: '$7.00 - $9.00', unit: 'per case (12 units)', moq: '100 cases', leadTime: '7-14 days', certifications: ['Halal'] },
+      { id: '6', name: 'Halawa Box - 500g', image: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400', priceRange: '$9.00 - $11.00', unit: 'per case (24 units)', moq: '50 cases', leadTime: '7-14 days', certifications: ['Halal', 'ISO'] },
+    ],
+    milestones: [
+      { year: '1994', event: 'Founded in Doha' },
+      { year: '2002', event: 'First hypermarket opened' },
+      { year: '2010', event: '500 retail outlets reached' },
+      { year: '2015', event: 'GCC expansion started' },
+      { year: '2024', event: 'Joined Brands Bridge AI' },
+    ],
+    isLive: true,
+    rating: 4.8,
+    reviewCount: 156,
+    exportCount: 45,
+    monthlyContainers: 25,
+    contactPerson: { name: 'Mohammed Al Kuwari', title: 'Export Manager', languages: ['🇬🇧 EN', '🇸🇦 AR'] },
+    activeCargo: { product: 'Premium Dates Mix', containerType: '40ft Dry', route: '→ Dubai/Jeddah', price: 24800 },
+    status: 'claimed',
+    profileViews: 342,
   },
   {
     id: '2', slug: 'baladna-food-industries', name: 'Baladna Food Industries',
@@ -474,7 +609,20 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-20',
     boothNumber: 'QA-002', minOrderValue: '$15,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Doha', 'Hamad Port']
+    paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Doha', 'Hamad Port'],
+    videoId: 'dQw4w9WgXcQ',
+    factoryImage: 'https://images.unsplash.com/photo-1584635491253-83edb4b6701b?w=1200',
+    products: [
+      { id: '1', name: 'Fresh Milk - 1L', image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400', priceRange: '$2.80 - $3.20', unit: 'per case (12L)', moq: '200 cases', leadTime: '7-14 days', certifications: ['Halal', 'ISO 22000'] },
+      { id: '2', name: 'Laban - 1L', image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400', priceRange: '$3.20 - $3.80', unit: 'per case (12L)', moq: '150 cases', leadTime: '7-14 days', certifications: ['Halal'] },
+      { id: '3', name: 'Yogurt - 1kg Tub', image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400', priceRange: '$4.50 - $5.20', unit: 'per case (6 units)', moq: '100 cases', leadTime: '7-14 days', certifications: ['Halal', 'ISO 22000'] },
+    ],
+    milestones: [{ year: '2017', event: 'Founded post-blockade' }, { year: '2019', event: '10,000 cows reached' }, { year: '2024', event: 'Joined Brands Bridge AI' }],
+    isLive: false, rating: 4.6, reviewCount: 89,
+    contactPerson: { name: 'Khalid Al Romaihi', title: 'Export Manager', languages: ['🇬🇧 EN', '🇸🇦 AR'] },
+    activeCargo: { product: 'UHT Milk 1L', containerType: '40ft Reefer', route: '→ UAE/Oman', price: 32000 },
+    status: 'claimed',
+    profileViews: 256,
   },
   {
     id: '3', slug: 'qatar-national-import-export', name: 'Qatar National Import & Export',
@@ -491,7 +639,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-10',
     boothNumber: 'QA-003', minOrderValue: '$5,000', leadTime: '7-14 days',
-    paymentTerms: ['LC at Sight', 'TT', 'EXW'], shippingPorts: ['Doha', 'Hamad Port']
+    paymentTerms: ['LC at Sight', 'TT', 'EXW'], shippingPorts: ['Doha', 'Hamad Port'],
+    status: 'claimed',
+    profileViews: 189,
   },
   // ============================================
   // SAUDI ARABIA COMPANIES
@@ -511,7 +661,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-05',
     boothNumber: 'SA-001', minOrderValue: '$20,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Jeddah', 'Dammam', 'Riyadh']
+    paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Jeddah', 'Dammam', 'Riyadh'],
+    status: 'claimed',
+    profileViews: 478,
   },
   {
     id: '5', slug: 'savola-group', name: 'Savola Group',
@@ -528,7 +680,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-08',
     boothNumber: 'SA-002', minOrderValue: '$25,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jeddah', 'Dammam']
+    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jeddah', 'Dammam'],
+    status: 'claimed',
+    profileViews: 312,
   },
   // ============================================
   // UAE COMPANIES
@@ -548,7 +702,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-12',
     boothNumber: 'AE-001', minOrderValue: '$12,000', leadTime: '7-14 days',
-    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jebel Ali', 'Abu Dhabi']
+    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jebel Ali', 'Abu Dhabi'],
+    status: 'claimed',
+    profileViews: 267,
   },
   {
     id: '7', slug: 'national-food-industries', name: 'National Food Industries',
@@ -565,7 +721,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Premium', joinDate: '2024-01-18',
     boothNumber: 'AE-002', minOrderValue: '$8,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jebel Ali']
+    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jebel Ali'],
+    status: 'claimed',
+    profileViews: 198,
   },
   {
     id: '8', slug: 'americana-foods', name: 'Americana Foods',
@@ -582,7 +740,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2024-01-22',
     boothNumber: 'AE-003', minOrderValue: '$18,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Jebel Ali', 'Abu Dhabi']
+    paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Jebel Ali', 'Abu Dhabi'],
+    status: 'claimed',
+    profileViews: 145,
   },
   // ============================================
   // KUWAIT COMPANIES
@@ -602,7 +762,9 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Premium', joinDate: '2024-01-25',
     boothNumber: 'KW-001', minOrderValue: '$6,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Shuwaikh', 'Doha Port']
+    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Shuwaikh', 'Doha Port'],
+    status: 'claimed',
+    profileViews: 223,
   },
   // ============================================
   // OMAN COMPANIES
@@ -622,7 +784,102 @@ export const companies: Company[] = [
     gallery: ['https://images.unsplash.com/photo-1534483509719-3feaee7c30da?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Premium', joinDate: '2024-01-28',
     boothNumber: 'OM-001', minOrderValue: '$7,000', leadTime: '14-21 days',
-    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Sohar', 'Muscat']
+    paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Sohar', 'Muscat'],
+    status: 'claimed',
+    profileViews: 167,
+  },
+  // ============================================
+  // UNCLAIMED COMPANIES (Not yet claimed by owners)
+  // ============================================
+  {
+    id: '11', slug: 'al-jazeera-food-co', name: 'Al Jazeera Food Co.',
+    logo: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=200',
+    description: 'A growing food distribution company in Qatar serving retail and HORECA sectors across the region.',
+    country: 'Qatar', countryFlag: '🇶🇦', city: 'Doha', businessType: 'Distributor',
+    categories: ['FMCG', 'Snacks & Chips'],
+    exportCountries: ['UAE', 'Saudi Arabia', 'Kuwait'],
+    yearEstablished: 2015, employees: '51-200',
+    certifications: ['Halal'],
+    website: '', whatsapp: '', email: '',
+    exportManager: { name: '', email: '', whatsapp: '' },
+    salesManager: { name: '', email: '' },
+    gallery: [],
+    featured: false, verified: false, subscriptionPlan: 'Free', joinDate: '2024-02-01',
+    status: 'unclaimed',
+    profileViews: 234,
+    pendingInquiries: 8,
+  },
+  {
+    id: '12', slug: 'gulf-sweets-factory', name: 'Gulf Sweets Factory',
+    logo: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=200',
+    description: 'Traditional Arabic sweets and confectionery manufacturer producing high-quality halawa, baklava, and regional specialties.',
+    country: 'Kuwait', countryFlag: '🇰🇼', city: 'Kuwait City', businessType: 'Manufacturer',
+    categories: ['Confectionery & Chocolate', 'Snacks & Chips'],
+    exportCountries: ['UAE', 'Saudi Arabia', 'Bahrain'],
+    yearEstablished: 2008, employees: '201-500',
+    certifications: ['Halal', 'ISO 22000'],
+    website: '', whatsapp: '', email: '',
+    exportManager: { name: '', email: '', whatsapp: '' },
+    salesManager: { name: '', email: '' },
+    gallery: [],
+    featured: false, verified: false, subscriptionPlan: 'Free', joinDate: '2024-02-05',
+    status: 'unclaimed',
+    profileViews: 156,
+    pendingInquiries: 3,
+  },
+  {
+    id: '13', slug: 'doha-dairy-products', name: 'Doha Dairy Products',
+    logo: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=200',
+    description: 'Fresh dairy products manufacturer supplying Qatar and the GCC with premium milk, yogurt, and laban.',
+    country: 'Qatar', countryFlag: '🇶🇦', city: 'Doha', businessType: 'Manufacturer',
+    categories: ['Dairy Products', 'Beverages'],
+    exportCountries: ['UAE', 'Saudi Arabia', 'Oman'],
+    yearEstablished: 2012, employees: '51-200',
+    certifications: ['Halal', 'HACCP'],
+    website: '', whatsapp: '', email: '',
+    exportManager: { name: '', email: '', whatsapp: '' },
+    salesManager: { name: '', email: '' },
+    gallery: [],
+    featured: false, verified: false, subscriptionPlan: 'Free', joinDate: '2024-02-08',
+    status: 'unclaimed',
+    profileViews: 89,
+    pendingInquiries: 5,
+  },
+  {
+    id: '14', slug: 'emirates-natural-foods', name: 'Emirates Natural Foods',
+    logo: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=200',
+    description: 'Organic and natural food products supplier specializing in health foods, grains, and superfoods for the UAE market.',
+    country: 'UAE', countryFlag: '🇦🇪', city: 'Dubai', businessType: 'Exporter',
+    categories: ['Organic', 'FMCG', 'Food Ingredients'],
+    exportCountries: ['Saudi Arabia', 'Qatar', 'Kuwait', 'Europe'],
+    yearEstablished: 2018, employees: '11-50',
+    certifications: ['Organic', 'Halal'],
+    website: '', whatsapp: '', email: '',
+    exportManager: { name: '', email: '', whatsapp: '' },
+    salesManager: { name: '', email: '' },
+    gallery: [],
+    featured: false, verified: false, subscriptionPlan: 'Free', joinDate: '2024-02-10',
+    status: 'unclaimed',
+    profileViews: 312,
+    pendingInquiries: 12,
+  },
+  {
+    id: '15', slug: 'riyadh-food-industries', name: 'Riyadh Food Industries',
+    logo: 'https://images.unsplash.com/photo-1509358271058-acd22cc93898?w=200',
+    description: 'Leading snack food manufacturer in Saudi Arabia producing chips, extruded snacks, and ready-to-eat products for domestic and export markets.',
+    country: 'Saudi Arabia', countryFlag: '🇸🇦', city: 'Riyadh', businessType: 'Manufacturer',
+    categories: ['Snacks & Chips', 'Beverages', 'Confectionery & Chocolate'],
+    exportCountries: ['UAE', 'Qatar', 'Kuwait', 'Bahrain', 'Egypt', 'Jordan'],
+    yearEstablished: 2005, employees: '500+',
+    certifications: ['ISO 22000', 'Halal', 'BRC'],
+    website: '', whatsapp: '', email: '',
+    exportManager: { name: '', email: '', whatsapp: '' },
+    salesManager: { name: '', email: '' },
+    gallery: [],
+    featured: false, verified: false, subscriptionPlan: 'Free', joinDate: '2024-02-12',
+    status: 'unclaimed',
+    profileViews: 445,
+    pendingInquiries: 19,
   }
 ];
 
@@ -642,55 +899,6 @@ export const commodityPrices: CommodityPrice[] = [
   { id: '9', commodity: 'Soybean Oil', unit: 'MT', currentPrice: 1045, previousPrice: 1062, change: -17, changePercent: -1.6, date: '2024-01-15', source: 'CBOT', region: 'USA', category: 'oil' },
   { id: '10', commodity: 'Sunflower Oil', unit: 'MT', currentPrice: 1120, previousPrice: 1095, change: 25, changePercent: 2.3, date: '2024-01-15', source: 'Rotterdam FOB', region: 'EU', category: 'oil' },
   { id: '11', commodity: 'Olive Oil (Extra Virgin)', unit: 'MT', currentPrice: 8450, previousPrice: 8200, change: 250, changePercent: 3.0, date: '2024-01-15', source: 'EU Market', region: 'Spain', category: 'oil' },
-];
-
-// DAILY CARGO AUCTION
-export const cargoAuctions: CargoAuction[] = [
-  {
-    id: '1', sellerId: '1', sellerName: 'OZMO Confectionery',
-    productName: 'Chocolate Wafer Bars - 750g Family Pack',
-    productImage: 'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=400',
-    quantity: '1 x 40ft Container (1,200 cases)', containerType: '40ft Reefer',
-    originPort: 'Mersin, Turkey', targetMarkets: ['GCC', 'Middle East', 'North Africa'],
-    destinationPorts: [
-      { port: 'Jeddah, Saudi Arabia', price: 28500 },
-      { port: 'Dubai, UAE', price: 27200 },
-      { port: 'Kuwait City, Kuwait', price: 29100 },
-      { port: 'Casablanca, Morocco', price: 31200 }
-    ],
-    minDeposit: 5700, depositPercent: 20, expiresAt: '2024-01-20T23:59:59', status: 'active',
-    certifications: ['Halal', 'ISO 22000'], specifications: 'Shelf life: 12 months, Storage: Cool & dry place'
-  },
-  {
-    id: '2', sellerId: '2', sellerName: 'Almarai Company',
-    productName: 'UHT Full Cream Milk - 1L Tetra Pack',
-    productImage: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400',
-    quantity: '2 x 40ft Containers (4,800 cases)', containerType: '40ft Dry',
-    originPort: 'Jeddah, Saudi Arabia', targetMarkets: ['GCC', 'Africa', 'Levant'],
-    destinationPorts: [
-      { port: 'Djibouti', price: 52000 },
-      { port: 'Mogadishu, Somalia', price: 54500 },
-      { port: 'Aden, Yemen', price: 48000 },
-      { port: 'Amman, Jordan', price: 46500 }
-    ],
-    minDeposit: 9600, depositPercent: 20, expiresAt: '2024-01-22T23:59:59', status: 'active',
-    certifications: ['Halal', 'SASO'], specifications: 'Shelf life: 9 months, UHT treated'
-  },
-  {
-    id: '3', sellerId: '5', sellerName: 'Nile Foods International',
-    productName: 'Canned Fava Beans (Foul Medames) - 400g',
-    productImage: 'https://images.unsplash.com/photo-1534483509719-3feaee7c30da?w=400',
-    quantity: '1 x 20ft Container (2,400 cases)', containerType: '20ft Dry',
-    originPort: 'Alexandria, Egypt', targetMarkets: ['Middle East', 'Europe', 'USA'],
-    destinationPorts: [
-      { port: 'Beirut, Lebanon', price: 18500 },
-      { port: 'Dubai, UAE', price: 21200 },
-      { port: 'Rotterdam, Netherlands', price: 24500 },
-      { port: 'New York, USA', price: 28000 }
-    ],
-    minDeposit: 3700, depositPercent: 20, expiresAt: '2024-01-25T23:59:59', status: 'active',
-    certifications: ['ISO 22000', 'Halal', 'FDA'], specifications: 'Shelf life: 36 months, Ready to eat'
-  }
 ];
 
 // Platform Stats
@@ -958,4 +1166,1651 @@ export const sampleDashboardData: CompanyDashboardData = {
   recentInquiries: 12,
   recentMeetings: 3,
   profileViews: 156
+};
+// === EXPO DATA ===
+
+// Walk-in Buyers (no account needed)
+export interface WalkinBuyer {
+  id: string;
+  name: string;
+  company: string;
+  country: string;
+  countryFlag: string;
+  whatsapp: string;
+  email: string;
+  products: string[];
+  targetCountries: string[];
+  registrationTime: string;
+  checkedIn: boolean;
+  checkInTime?: string;
+  meetingsHeld: number;
+  cardsCollected: number;
+  notes?: string;
+}
+
+// Note: walkinBuyers is defined later in the file with correct schema
+
+// Pre-registered Buyers (have accounts)
+export interface PreRegisteredBuyer {
+  id: string;
+  name: string;
+  company: string;
+  country: string;
+  countryFlag: string;
+  email: string;
+  whatsapp: string;
+  productInterests: string[];
+  targetCountries: string[];
+  registrationDate: string;
+  status: 'confirmed' | 'pending' | 'attended' | 'no-show';
+  meetingsScheduled: number;
+  meetingsCompleted: number;
+  attendedSessions: string[];
+}
+
+// Note: preRegisteredBuyers is defined later in the file with correct schema
+
+// Expo Room Status
+export interface ExpoRoom {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companyFlag: string;
+  sellerName: string;
+  sellerTitle: string;
+  sellerLanguages: string[];
+  products: string[];
+  status: 'available' | 'busy' | 'full' | 'live' | 'ended' | 'queued';
+  waitingCount: number;
+  estimatedWait: number; // minutes
+  accessCode: string;
+  totalMeetings: number;
+  totalDeals: number;
+  dealValue: number;
+}
+
+export const expoRooms: ExpoRoom[] = [
+  {
+    id: 'room-a12',
+    companyId: '1',
+    companyName: 'Al Meera Consumer Goods',
+    companyFlag: '🇶🇦',
+    sellerName: 'Mohammed Al Kuwari',
+    sellerTitle: 'Export Manager',
+    sellerLanguages: ['EN', 'AR'],
+    products: ['FMCG', 'Dairy', 'Beverages'],
+    status: 'available',
+    waitingCount: 0,
+    estimatedWait: 0,
+    accessCode: 'BB-A12-2025',
+    totalMeetings: 0,
+    totalDeals: 0,
+    dealValue: 0
+  },
+  {
+    id: 'room-a13',
+    companyId: '1',
+    companyName: 'Al Meera Consumer Goods',
+    companyFlag: '🇶🇦',
+    sellerName: 'Sara Al Jaber',
+    sellerTitle: 'Sales Manager',
+    sellerLanguages: ['EN'],
+    products: ['Beverages'],
+    status: 'busy',
+    waitingCount: 2,
+    estimatedWait: 8,
+    accessCode: 'BB-A13-2025',
+    totalMeetings: 3,
+    totalDeals: 1,
+    dealValue: 12000
+  },
+  {
+    id: 'room-a14',
+    companyId: '1',
+    companyName: 'Al Meera Consumer Goods',
+    companyFlag: '🇶🇦',
+    sellerName: 'Khalid Hassan',
+    sellerTitle: 'Trade Specialist',
+    sellerLanguages: ['AR'],
+    products: ['Snacks'],
+    status: 'full',
+    waitingCount: 5,
+    estimatedWait: 18,
+    accessCode: 'BB-A14-2025',
+    totalMeetings: 8,
+    totalDeals: 2,
+    dealValue: 28000
+  },
+  {
+    id: 'room-b01',
+    companyId: '2',
+    companyName: 'Baladna Food Industries',
+    companyFlag: '🇶🇦',
+    sellerName: 'Khalid Al Romaihi',
+    sellerTitle: 'Export Manager',
+    sellerLanguages: ['EN', 'AR'],
+    products: ['Dairy', 'Fresh Food'],
+    status: 'available',
+    waitingCount: 0,
+    estimatedWait: 0,
+    accessCode: 'BB-B01-2025',
+    totalMeetings: 0,
+    totalDeals: 0,
+    dealValue: 0
+  },
+  {
+    id: 'room-b02',
+    companyId: '2',
+    companyName: 'Baladna Food Industries',
+    companyFlag: '🇶🇦',
+    sellerName: 'Nadia Al Baker',
+    sellerTitle: 'Sales Director',
+    sellerLanguages: ['EN', 'AR', 'FR'],
+    products: ['Beverages'],
+    status: 'busy',
+    waitingCount: 3,
+    estimatedWait: 12,
+    accessCode: 'BB-B02-2025',
+    totalMeetings: 5,
+    totalDeals: 2,
+    dealValue: 35000
+  },
+  {
+    id: 'room-c01',
+    companyId: '3',
+    companyName: 'OZMO Confectionery',
+    companyFlag: '🇹🇷',
+    sellerName: 'Mehmet Yilmaz',
+    sellerTitle: 'Export Manager',
+    sellerLanguages: ['EN', 'TR'],
+    products: ['Confectionery', 'Chocolate'],
+    status: 'available',
+    waitingCount: 0,
+    estimatedWait: 0,
+    accessCode: 'BB-C01-2025',
+    totalMeetings: 0,
+    totalDeals: 0,
+    dealValue: 0
+  },
+  {
+    id: 'room-c02',
+    companyId: '3',
+    companyName: 'OZMO Confectionery',
+    companyFlag: '🇹🇷',
+    sellerName: 'Ayse Kaya',
+    sellerTitle: 'Sales Manager',
+    sellerLanguages: ['EN', 'TR', 'AR'],
+    products: ['Confectionery'],
+    status: 'busy',
+    waitingCount: 4,
+    estimatedWait: 15,
+    accessCode: 'BB-C02-2025',
+    totalMeetings: 6,
+    totalDeals: 3,
+    dealValue: 45000
+  }
+];
+
+// Logistics Zone Companies
+export interface LogisticsCompany {
+  id: string;
+  name: string;
+  flag: string;
+  routes: string[];
+  containerTypes: string[];
+  specialRate: string;
+  requestsReceived: number;
+  quotesSubmitted: number;
+  status: 'available' | 'busy';
+}
+
+export const logisticsCompanies: LogisticsCompany[] = [
+  {
+    id: 'log-001',
+    name: 'Maersk Middle East',
+    flag: '🇩🇰',
+    routes: ['Dubai → Rotterdam', 'Doha → Hamburg', 'Jeddah → Singapore'],
+    containerTypes: ['20ft', '40ft', '40ft HC', 'Reefer'],
+    specialRate: '15% off expo day',
+    requestsReceived: 12,
+    quotesSubmitted: 8,
+    status: 'available'
+  },
+  {
+    id: 'log-002',
+    name: 'MSC Gulf',
+    flag: '🇮🇹',
+    routes: ['Dubai → Felixstowe', 'Qatar → Germany'],
+    containerTypes: ['20ft', '40ft', '40ft HC'],
+    specialRate: '10% discount today',
+    requestsReceived: 8,
+    quotesSubmitted: 5,
+    status: 'busy'
+  },
+  {
+    id: 'log-003',
+    name: 'Gulf Shipping Co.',
+    flag: '🇦🇪',
+    routes: ['GCC → Europe', 'Qatar → UK', 'UAE → India'],
+    containerTypes: ['20ft', '40ft', 'Reefer'],
+    specialRate: 'Free documentation',
+    requestsReceived: 6,
+    quotesSubmitted: 4,
+    status: 'available'
+  }
+];
+
+// Walk-in Buyers Sample Data
+export const walkinBuyers: WalkinBuyer[] = [
+  {
+    id: 'ww-001',
+    name: 'Khalid Mahmoud',
+    company: 'Fresh Mart Qatar',
+    country: 'Qatar',
+    countryFlag: '🇶🇦',
+    whatsapp: '+97412345678',
+    email: 'khalid@freshmart.qa',
+    products: ['Dairy Products', 'Fresh Fruits', 'Organic Vegetables'],
+    targetCountries: ['UAE', 'Saudi Arabia', 'Turkey'],
+    registrationTime: '2025-04-14T09:30:00',
+    checkedIn: true,
+    checkInTime: '2025-04-14T09:35:00',
+    meetingsHeld: 3,
+    cardsCollected: 5
+  },
+  {
+    id: 'ww-002',
+    name: 'Priya Sharma',
+    company: 'Spice Route Trading',
+    country: 'India',
+    countryFlag: '🇮🇳',
+    whatsapp: '+919876543210',
+    email: 'priya@spiceroute.in',
+    products: ['Spices', 'Seasonings', 'Herbs'],
+    targetCountries: ['UAE', 'Saudi Arabia', 'Qatar'],
+    registrationTime: '2025-04-14T10:15:00',
+    checkedIn: true,
+    checkInTime: '2025-04-14T10:20:00',
+    meetingsHeld: 2,
+    cardsCollected: 3
+  },
+  {
+    id: 'ww-003',
+    name: 'Ahmed Hassan',
+    company: 'Gulf Food Importer',
+    country: 'Egypt',
+    countryFlag: '🇪🇬',
+    whatsapp: '+201234567890',
+    email: 'ahmed@gulfood.com.eg',
+    products: ['Confectionery', 'Beverages', 'Snack Foods'],
+    targetCountries: ['Saudi Arabia', 'UAE', 'Kuwait'],
+    registrationTime: '2025-04-14T11:00:00',
+    checkedIn: false,
+    meetingsHeld: 0,
+    cardsCollected: 0
+  },
+  {
+    id: 'ww-004',
+    name: 'Lisa Chen',
+    company: 'Pacific Rim Foods',
+    country: 'Singapore',
+    countryFlag: '🇸🇬',
+    whatsapp: '+6598765432',
+    email: 'lisa@pacificrim.sg',
+    products: ['Seafood', 'Rice Products', 'Tropical Fruits'],
+    targetCountries: ['UAE', 'Saudi Arabia', 'Qatar'],
+    registrationTime: '2025-04-14T11:45:00',
+    checkedIn: true,
+    checkInTime: '2025-04-14T11:50:00',
+    meetingsHeld: 4,
+    cardsCollected: 6
+  }
+];
+
+// Pre-Registered Buyers Sample Data
+export const preRegisteredBuyers: PreRegisteredBuyer[] = [
+  {
+    id: 'rb-001',
+    name: 'Mohammed Al Rashid',
+    company: 'Al Meera Group',
+    country: 'Qatar',
+    countryFlag: '🇶🇦',
+    email: 'm.alrashid@almeera.qa',
+    whatsapp: '+97455224433',
+    productInterests: ['Dairy Products', 'Fresh Fruits', 'Beverages'],
+    targetCountries: ['UAE', 'Turkey', 'Europe'],
+    registrationDate: '2025-04-10',
+    status: 'confirmed',
+    meetingsScheduled: 5,
+    meetingsCompleted: 2,
+    attendedSessions: ['Dairy Showcase', 'Beverage Tasting']
+  },
+  {
+    id: 'rb-002',
+    name: 'Sarah Williams',
+    company: 'EuroMart Retail',
+    country: 'Germany',
+    countryFlag: '🇩🇪',
+    email: 'sarah.w@euromart.de',
+    whatsapp: '+4917655223344',
+    productInterests: ['Premium Snacks', 'Organic Foods', 'Vegan Products'],
+    targetCountries: ['Turkey', 'Morocco', 'Egypt'],
+    registrationDate: '2025-04-08',
+    status: 'confirmed',
+    meetingsScheduled: 3,
+    meetingsCompleted: 1,
+    attendedSessions: ['Premium Snacks']
+  },
+  {
+    id: 'rb-003',
+    name: 'James Liu',
+    company: 'Asian Foods Co.',
+    country: 'Hong Kong',
+    countryFlag: '🇭🇰',
+    email: 'james.liu@asianfoods.hk',
+    whatsapp: '+85291234567',
+    productInterests: ['Seafood', 'Rice Products', 'Asian Sauces'],
+    targetCountries: ['UAE', 'Saudi Arabia', 'Qatar'],
+    registrationDate: '2025-04-05',
+    status: 'attended',
+    meetingsScheduled: 4,
+    meetingsCompleted: 4,
+    attendedSessions: ['Seafood Showcase', 'Asian Cuisine', 'Rice Products', 'Sauce Tasting']
+  },
+  {
+    id: 'rb-004',
+    name: 'Fatima Al Zain',
+    company: 'Gulf Retail Company',
+    country: 'Bahrain',
+    countryFlag: '🇧🇭',
+    email: 'fatima@gulfretail.bh',
+    whatsapp: '+97339284756',
+    productInterests: ['Confectionery', 'Bakery Products', 'Beverages'],
+    targetCountries: ['UAE', 'Turkey', 'Lebanon'],
+    registrationDate: '2025-04-12',
+    status: 'pending',
+    meetingsScheduled: 2,
+    meetingsCompleted: 0,
+    attendedSessions: []
+  }
+];
+
+// ============================================
+// 3PL & COLD STORAGE DATA
+// ============================================
+
+export interface ThreePLInventory {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientCountry: string;
+  clientFlag: string;
+  product: string;
+  category: string;
+  pallets: number;
+  zone: 'Frozen' | 'Chilled' | 'Ambient' | 'Controlled';
+  temperature: string;
+  entryDate: string;
+  exitDate: string;
+  status: 'active' | 'expiring_soon' | 'released';
+  linkedDeal?: string;
+  warehouseId: string;
+}
+
+export interface ThreePLRequest {
+  id: string;
+  source: 'supplier' | 'buyer';
+  fromName: string;
+  fromFlag: string;
+  product: string;
+  pallets: number;
+  zone: string;
+  tempRequired: string;
+  durationDays: number;
+  startDate: string;
+  endDate: string;
+  linkedDeal?: string;
+  status: 'pending' | 'quoted' | 'accepted' | 'declined';
+  receivedDate: string;
+  specialRequirements?: string;
+}
+
+export interface TemperatureZone {
+  id: string;
+  name: string;
+  type: 'Frozen' | 'Chilled' | 'Ambient' | 'Controlled';
+  icon: string;
+  tempRange: string;
+  currentTemp: string;
+  capacity: number;
+  inUse: number;
+  status: 'normal' | 'warning' | 'critical';
+}
+
+export interface PalletListing {
+  id: string;
+  zoneType: 'Frozen' | 'Chilled' | 'Ambient' | 'Controlled';
+  availablePallets: number;
+  pricePerDay: number;
+  pricePerMonth: number;
+  availableFrom: string;
+  availableUntil: string;
+  minBooking: number;
+  certifications: string[];
+  specialNotes?: string;
+  visibility: 'public' | 'private';
+  status: 'active' | 'booked' | 'expired';
+}
+
+export interface DigitalReceipt {
+  id: string;
+  receiptType: 'received' | 'release';
+  clientName: string;
+  clientFlag: string;
+  product: string;
+  pallets: number;
+  zone: string;
+  entryDate: string;
+  exitDate?: string;
+  status: 'pending' | 'issued' | 'sent';
+  warehouseId: string;
+}
+
+export const threePLInventory: ThreePLInventory[] = [
+  {
+    id: 'inv-001',
+    clientId: 'baladna-food',
+    clientName: 'Baladna Food Industries',
+    clientCountry: 'Qatar',
+    clientFlag: '🇶🇦',
+    product: 'UHT Full Cream Milk',
+    category: 'Dairy',
+    pallets: 120,
+    zone: 'Chilled',
+    temperature: '4°C',
+    entryDate: '2025-01-15',
+    exitDate: '2025-02-15',
+    status: 'active',
+    linkedDeal: 'BB-0892',
+    warehouseId: '3pl@brandsbridge.ai'
+  },
+  {
+    id: 'inv-002',
+    clientId: 'al-meera',
+    clientName: 'Al Meera Consumer Goods',
+    clientCountry: 'Qatar',
+    clientFlag: '🇶🇦',
+    product: 'Frozen Vegetables',
+    category: 'Food',
+    pallets: 85,
+    zone: 'Frozen',
+    temperature: '-18°C',
+    entryDate: '2025-01-20',
+    exitDate: '2025-02-20',
+    status: 'active',
+    warehouseId: '3pl@brandsbridge.ai'
+  },
+  {
+    id: 'inv-003',
+    clientId: 'ozmo-confectionery',
+    clientName: 'OZMO Confectionery',
+    clientCountry: 'Turkey',
+    clientFlag: '🇹🇷',
+    product: 'Chocolate Wafers',
+    category: 'Confectionery',
+    pallets: 200,
+    zone: 'Ambient',
+    temperature: '18°C',
+    entryDate: '2025-01-22',
+    exitDate: '2025-03-01',
+    status: 'active',
+    warehouseId: '3pl@brandsbridge.ai'
+  },
+  {
+    id: 'inv-004',
+    clientId: 'gulf-foods',
+    clientName: 'Gulf Foods LLC',
+    clientCountry: 'Saudi Arabia',
+    clientFlag: '🇸🇦',
+    product: 'Frozen Chicken',
+    category: 'Protein',
+    pallets: 150,
+    zone: 'Frozen',
+    temperature: '-20°C',
+    entryDate: '2025-01-25',
+    exitDate: '2025-02-10',
+    status: 'expiring_soon',
+    warehouseId: '3pl@brandsbridge.ai'
+  },
+  {
+    id: 'inv-005',
+    clientId: 'savola-group',
+    clientName: 'Savola Group',
+    clientCountry: 'Saudi Arabia',
+    clientFlag: '🇸🇦',
+    product: 'Edible Oils',
+    category: 'FMCG',
+    pallets: 95,
+    zone: 'Ambient',
+    temperature: '22°C',
+    entryDate: '2025-01-10',
+    exitDate: '2025-02-28',
+    status: 'active',
+    warehouseId: '3pl@brandsbridge.ai'
+  }
+];
+
+export const threePLRequests: ThreePLRequest[] = [
+  {
+    id: 'req-3pl-001',
+    source: 'supplier',
+    fromName: 'Baladna Food Industries',
+    fromFlag: '🇶🇦',
+    product: 'UHT Full Cream Milk',
+    pallets: 200,
+    zone: 'Chilled',
+    tempRequired: '2-8°C',
+    durationDays: 45,
+    startDate: '2025-02-01',
+    endDate: '2025-03-15',
+    linkedDeal: 'BB-0892',
+    status: 'pending',
+    receivedDate: '2025-01-29',
+    specialRequirements: 'Halal certified storage required'
+  },
+  {
+    id: 'req-3pl-002',
+    source: 'supplier',
+    fromName: 'OZMO Confectionery',
+    fromFlag: '🇹🇷',
+    product: 'Chocolate Products',
+    pallets: 80,
+    zone: 'Ambient',
+    tempRequired: '15-20°C',
+    durationDays: 30,
+    startDate: '2025-02-05',
+    endDate: '2025-03-05',
+    status: 'pending',
+    receivedDate: '2025-01-28'
+  },
+  {
+    id: 'req-3pl-003',
+    source: 'buyer',
+    fromName: 'Carrefour UAE',
+    fromFlag: '🇦🇪',
+    product: 'Frozen Seafood Mix',
+    pallets: 150,
+    zone: 'Frozen',
+    tempRequired: '-25°C to -18°C',
+    durationDays: 60,
+    startDate: '2025-02-10',
+    endDate: '2025-04-10',
+    status: 'quoted',
+    receivedDate: '2025-01-27'
+  },
+  {
+    id: 'req-3pl-004',
+    source: 'supplier',
+    fromName: 'Nile Foods Trading',
+    fromFlag: '🇪🇬',
+    product: 'Canned Tomatoes',
+    pallets: 100,
+    zone: 'Ambient',
+    tempRequired: '15-25°C',
+    durationDays: 90,
+    startDate: '2025-02-15',
+    endDate: '2025-05-15',
+    status: 'pending',
+    receivedDate: '2025-01-26'
+  },
+  {
+    id: 'req-3pl-005',
+    source: 'supplier',
+    fromName: 'Almarai Company',
+    fromFlag: '🇸🇦',
+    product: 'Fresh Dairy Products',
+    pallets: 300,
+    zone: 'Chilled',
+    tempRequired: '0-5°C',
+    durationDays: 21,
+    startDate: '2025-02-01',
+    endDate: '2025-02-21',
+    status: 'accepted',
+    receivedDate: '2025-01-25'
+  }
+];
+
+export const temperatureZones: TemperatureZone[] = [
+  {
+    id: 'zone-a',
+    name: 'ZONE A',
+    type: 'Frozen',
+    icon: '❄️',
+    tempRange: '-25°C to -15°C',
+    currentTemp: '-18°C',
+    capacity: 500,
+    inUse: 235,
+    status: 'normal'
+  },
+  {
+    id: 'zone-b',
+    name: 'ZONE B',
+    type: 'Chilled',
+    icon: '🧊',
+    tempRange: '0°C to 8°C',
+    currentTemp: '4°C',
+    capacity: 400,
+    inUse: 120,
+    status: 'normal'
+  },
+  {
+    id: 'zone-c',
+    name: 'ZONE C',
+    type: 'Ambient',
+    icon: '🌡️',
+    tempRange: '15°C to 25°C',
+    currentTemp: '22°C',
+    capacity: 600,
+    inUse: 295,
+    status: 'normal'
+  },
+  {
+    id: 'zone-d',
+    name: 'ZONE D',
+    type: 'Controlled',
+    icon: '🔬',
+    tempRange: 'Custom',
+    currentTemp: '12°C',
+    capacity: 500,
+    inUse: 490,
+    status: 'warning'
+  }
+];
+
+export const palletListings: PalletListing[] = [
+  {
+    id: 'listing-001',
+    zoneType: 'Frozen',
+    availablePallets: 265,
+    pricePerDay: 2.5,
+    pricePerMonth: 65,
+    availableFrom: '2025-01-15',
+    availableUntil: '2025-06-15',
+    minBooking: 20,
+    certifications: ['Halal', 'ISO 22000'],
+    specialNotes: 'Ideal for frozen proteins and seafood',
+    visibility: 'public',
+    status: 'active'
+  },
+  {
+    id: 'listing-002',
+    zoneType: 'Chilled',
+    availablePallets: 280,
+    pricePerDay: 3.0,
+    pricePerMonth: 80,
+    availableFrom: '2025-01-15',
+    availableUntil: '2025-06-15',
+    minBooking: 15,
+    certifications: ['Halal', 'Temperature Log'],
+    specialNotes: 'Perfect for dairy and fresh produce',
+    visibility: 'public',
+    status: 'active'
+  },
+  {
+    id: 'listing-003',
+    zoneType: 'Ambient',
+    availablePallets: 305,
+    pricePerDay: 1.8,
+    pricePerMonth: 48,
+    availableFrom: '2025-01-15',
+    availableUntil: '2025-06-15',
+    minBooking: 25,
+    certifications: ['Halal', 'Organic'],
+    specialNotes: 'Dry goods, confectionery, canned products',
+    visibility: 'public',
+    status: 'active'
+  }
+];
+
+export const digitalReceipts: DigitalReceipt[] = [
+  {
+    id: 'rcpt-001',
+    receiptType: 'received',
+    clientName: 'Baladna Food Industries',
+    clientFlag: '🇶🇦',
+    product: 'UHT Full Cream Milk',
+    pallets: 120,
+    zone: 'Chilled',
+    entryDate: '2025-01-15',
+    status: 'issued',
+    warehouseId: '3pl@brandsbridge.ai'
+  },
+  {
+    id: 'rcpt-002',
+    receiptType: 'received',
+    clientName: 'Al Meera Consumer Goods',
+    clientFlag: '🇶🇦',
+    product: 'Frozen Vegetables',
+    pallets: 85,
+    zone: 'Frozen',
+    entryDate: '2025-01-20',
+    status: 'issued',
+    warehouseId: '3pl@brandsbridge.ai'
+  },
+  {
+    id: 'rcpt-003',
+    receiptType: 'release',
+    clientName: 'Fresh Valley Foods',
+    clientFlag: '🇦🇪',
+    product: 'Fresh Poultry',
+    pallets: 75,
+    zone: 'Chilled',
+    entryDate: '2025-01-05',
+    exitDate: '2025-01-25',
+    status: 'sent',
+    warehouseId: '3pl@brandsbridge.ai'
+  }
+];
+
+export const suggestedSuppliers: { id: string; name: string; flag: string; product: string; reason: string }[] = [
+  {
+    id: 'sug-001',
+    name: 'Fresh Valley Foods',
+    flag: '🇦🇪',
+    product: 'Fresh Poultry',
+    reason: 'Expanding cold storage needs'
+  },
+  {
+    id: 'sug-002',
+    name: 'Dubai Seafood Co.',
+    flag: '🇦🇪',
+    product: 'Premium Seafood',
+    reason: 'Recently secured export deals'
+  },
+  {
+    id: 'sug-003',
+    name: 'Al Ain Dairy',
+    flag: '🇦🇪',
+    product: 'Fresh Dairy',
+    reason: 'Looking for GCC distribution'
+  }
+];
+
+// ============================================
+// 3PL SUGGESTED SUPPLIERS (AI Intelligence)
+// ============================================
+
+export interface SuggestedSupplier3PL {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  supplierCountry: string;
+  supplierFlag: string;
+  product: string;
+  estimatedPallets: number;
+  suggestedZone: string;
+  reason: string;
+  shipmentRoute: string;
+  confidence: number;
+  eta: string;
+  status: 'new' | 'contacted' | 'converted' | 'archived';
+  source: string;
+}
+
+export const suggestedSuppliers3PL: SuggestedSupplier3PL[] = [
+  {
+    id: 'sug-3pl-001',
+    supplierId: 'ozmo-confectionery',
+    supplierName: 'OZMO Confectionery',
+    supplierCountry: 'Turkey',
+    supplierFlag: '🇹🇷',
+    product: 'Chocolate & Confectionery',
+    estimatedPallets: 80,
+    suggestedZone: 'Ambient',
+    reason: 'Active shipment to Dubai detected',
+    shipmentRoute: 'Istanbul → Dubai',
+    confidence: 87,
+    eta: '2025-02-08',
+    status: 'new',
+    source: 'shipping_intelligence'
+  },
+  {
+    id: 'sug-3pl-002',
+    supplierId: 'baladna-food-industries',
+    supplierName: 'Baladna Food Industries',
+    supplierCountry: 'Qatar',
+    supplierFlag: '🇶🇦',
+    product: 'Dairy Products — UHT Milk',
+    estimatedPallets: 150,
+    suggestedZone: 'Chilled',
+    reason: 'Regular monthly shipments detected',
+    shipmentRoute: 'Doha → Dubai',
+    confidence: 94,
+    eta: '2025-02-12',
+    status: 'new',
+    source: 'shipping_intelligence'
+  },
+  {
+    id: 'sug-3pl-003',
+    supplierId: 'gulf-food-industries',
+    supplierName: 'Gulf Food Industries',
+    supplierCountry: 'Kuwait',
+    supplierFlag: '🇰🇼',
+    product: 'Frozen Food Products',
+    estimatedPallets: 60,
+    suggestedZone: 'Frozen',
+    reason: 'New trade route opened to UAE',
+    shipmentRoute: 'Kuwait → Dubai',
+    confidence: 72,
+    eta: '2025-02-20',
+    status: 'new',
+    source: 'shipping_intelligence'
+  },
+  {
+    id: 'sug-3pl-004',
+    supplierId: 'nile-foods-trading',
+    supplierName: 'Nile Foods Trading',
+    supplierCountry: 'Egypt',
+    supplierFlag: '🇪🇬',
+    product: 'Canned & Preserved Foods',
+    estimatedPallets: 120,
+    suggestedZone: 'Ambient',
+    reason: 'Expanded distribution to GCC',
+    shipmentRoute: 'Cairo → Dubai',
+    confidence: 81,
+    eta: '2025-02-15',
+    status: 'contacted',
+    source: 'shipping_intelligence'
+  },
+  {
+    id: 'sug-3pl-005',
+    supplierId: 'almarai-company',
+    supplierName: 'Almarai Company',
+    supplierCountry: 'Saudi Arabia',
+    supplierFlag: '🇸🇦',
+    product: 'Fresh Dairy & Juices',
+    estimatedPallets: 200,
+    suggestedZone: 'Chilled',
+    reason: 'New retail partnership in UAE',
+    shipmentRoute: 'Riyadh → Dubai',
+    confidence: 91,
+    eta: '2025-02-25',
+    status: 'converted',
+    source: 'shipping_intelligence'
+  }
+];
+
+// ============================================
+// 3PL COMPANIES FOR EXPO HALL
+// ============================================
+
+export interface ThreePLCompany {
+  id: string;
+  name: string;
+  logo: string;
+  tagline: string;
+  country: string;
+  countryFlag: string;
+  city: string;
+  yearEstablished: number;
+  warehouseCount: number;
+  totalCapacity: number;
+  availableNow: number;
+  services: string[];
+  certifications: string[];
+  aiReliability: number;
+  verified: boolean;
+  pricing?: {
+    frozen?: number;
+    chilled?: number;
+    ambient?: number;
+    minBooking: number;
+  };
+  contactPerson: string;
+  contactTitle: string;
+  whatsapp: string;
+  email: string;
+  languages: string[];
+}
+
+export const threePLCompanies: ThreePLCompany[] = [
+  {
+    id: '3pl-001',
+    name: 'Gulf Cold Chain Co.',
+    logo: '🏭',
+    tagline: 'Premium cold storage solutions across the GCC',
+    country: 'United Arab Emirates',
+    countryFlag: '🇦🇪',
+    city: 'Dubai',
+    yearEstablished: 2015,
+    warehouseCount: 2,
+    totalCapacity: 2000,
+    availableNow: 760,
+    services: ['Frozen Storage', 'Chilled Storage', 'Ambient Storage', 'Cross-Docking', 'Pick & Pack'],
+    certifications: ['ISO 22000', 'Halal Certified Storage', 'HACCP'],
+    aiReliability: 96,
+    verified: true,
+    pricing: {
+      frozen: 2.5,
+      chilled: 3.0,
+      ambient: 1.8,
+      minBooking: 20
+    },
+    contactPerson: 'Ahmed Al Mansoori',
+    contactTitle: 'Business Development Manager',
+    whatsapp: '+971501234567',
+    email: 'business@gulfcoldchain.ae',
+    languages: ['English', 'Arabic', 'Hindi']
+  },
+  {
+    id: '3pl-002',
+    name: 'Emirates Cold Storage',
+    logo: '❄️',
+    tagline: 'Your trusted partner in temperature-controlled logistics',
+    country: 'United Arab Emirates',
+    countryFlag: '🇦🇪',
+    city: 'Abu Dhabi',
+    yearEstablished: 2010,
+    warehouseCount: 3,
+    totalCapacity: 3500,
+    availableNow: 1250,
+    services: ['Frozen Storage', 'Chilled Storage', 'Controlled Atmosphere', 'Bonded Warehouse', 'Customs Clearance'],
+    certifications: ['ISO 9001', 'ISO 22000', 'GDP', 'FIATA Member', 'Customs Bonded'],
+    aiReliability: 98,
+    verified: true,
+    pricing: {
+      frozen: 2.8,
+      chilled: 3.5,
+      ambient: 2.0,
+      minBooking: 25
+    },
+    contactPerson: 'Fatima Al Zaabi',
+    contactTitle: 'Operations Director',
+    whatsapp: '+971502345678',
+    email: 'ops@emiratescold.ae',
+    languages: ['English', 'Arabic']
+  },
+  {
+    id: '3pl-003',
+    name: 'Qatar Cold Logistics',
+    logo: '🏢',
+    tagline: 'State-of-the-art cold chain solutions in Qatar',
+    country: 'Qatar',
+    countryFlag: '🇶🇦',
+    city: 'Doha',
+    yearEstablished: 2018,
+    warehouseCount: 1,
+    totalCapacity: 1500,
+    availableNow: 450,
+    services: ['Frozen Storage', 'Chilled Storage', 'Last-Mile Delivery', 'Inventory Management'],
+    certifications: ['ISO 22000', 'Halal Certified Storage'],
+    aiReliability: 94,
+    verified: true,
+    pricing: {
+      frozen: 3.2,
+      chilled: 3.8,
+      ambient: 2.2,
+      minBooking: 15
+    },
+    contactPerson: 'Mohammed Al Emadi',
+    contactTitle: 'Sales Manager',
+    whatsapp: '+97466123456',
+    email: 'sales@qatarcold.qa',
+    languages: ['English', 'Arabic', 'French']
+  },
+  {
+    id: '3pl-004',
+    name: 'Saudi Cold Chain Co.',
+    logo: '🌡️',
+    tagline: 'Connecting the Kingdom through precision cold chain',
+    country: 'Saudi Arabia',
+    countryFlag: '🇸🇦',
+    city: 'Jeddah',
+    yearEstablished: 2012,
+    warehouseCount: 4,
+    totalCapacity: 5000,
+    availableNow: 1800,
+    services: ['Frozen Storage', 'Chilled Storage', 'Ambient Storage', 'Hazmat Storage', 'Cross-Docking', 'Last-Mile Delivery'],
+    certifications: ['ISO 9001', 'ISO 22000', 'HACCP', 'Halal Certified Storage', 'GDP'],
+    aiReliability: 97,
+    verified: true,
+    pricing: {
+      frozen: 2.2,
+      chilled: 2.8,
+      ambient: 1.5,
+      minBooking: 30
+    },
+    contactPerson: 'Khalid Al Ghamdi',
+    contactTitle: 'General Manager',
+    whatsapp: '+966501234567',
+    email: 'info@saudicoldchain.sa',
+    languages: ['English', 'Arabic']
+  }
+];
+
+// ============================================
+// CARGO AUCTION DATA - Ready-to-Ship Containers
+// ============================================
+
+export interface CargoAuctionItem {
+  id: string;
+  productName: string;
+  productVariant: string;
+  category: string;
+  supplierId: string;
+  supplierName: string;
+  supplierCountry: string;
+  supplierFlag: string;
+  supplierVerified: boolean;
+  container: {
+    type: string;
+    quantity: number;
+    cases: number;
+    grossWeight: string;
+    volume?: string;
+  };
+  origin: {
+    port: string;
+    country: string;
+    readyDate: string;
+  };
+  certifications: string[];
+  productDetails: {
+    shelfLife: string;
+    storage: string;
+    minTemp?: number;
+    maxTemp?: number;
+  };
+  targetMarkets: string[];
+  deliveryPrices: {
+    port: string;
+    country: string;
+    price: number;
+    flag: string;
+  }[];
+  media: {
+    images: string[];
+    videos?: {
+      type: string;
+      url: string;
+      thumbnail: string;
+    }[];
+  };
+  auction: {
+    createdAt: string;
+    expiresAt: string;
+    status: 'active' | 'reserved' | 'sold' | 'expired';
+    reservations: number;
+    views: number;
+  };
+  platformFees: {
+    platformFeePercent: number;
+    escrowFee: number;
+    depositPercent: number;
+  };
+}
+
+export const cargoAuctions: CargoAuctionItem[] = [
+  {
+    id: 'CA-2025-001',
+    productName: 'Chocolate Wafer Bars',
+    productVariant: '750g Family Pack',
+    category: 'Confectionery',
+    supplierId: 'ozmo-confectionery',
+    supplierName: 'OZMO Confectionery',
+    supplierCountry: 'Turkey',
+    supplierFlag: '🇹🇷',
+    supplierVerified: true,
+    container: {
+      type: '40ft',
+      quantity: 1,
+      cases: 1200,
+      grossWeight: '18 MT',
+      volume: '55 CBM'
+    },
+    origin: {
+      port: 'Mersin',
+      country: 'Turkey',
+      readyDate: '2025-01-30'
+    },
+    certifications: ['Halal', 'ISO 22000', 'HACCP'],
+    productDetails: {
+      shelfLife: '12 months',
+      storage: 'Cool & dry place',
+      minTemp: 15,
+      maxTemp: 25
+    },
+    targetMarkets: ['GCC', 'Middle East', 'North Africa'],
+    deliveryPrices: [
+      { port: 'Jeddah', country: 'Saudi Arabia', price: 28500, flag: '🇸🇦' },
+      { port: 'Dubai', country: 'UAE', price: 27200, flag: '🇦🇪' },
+      { port: 'Kuwait City', country: 'Kuwait', price: 29100, flag: '🇰🇼' },
+      { port: 'Doha', country: 'Qatar', price: 26800, flag: '🇶🇦' },
+      { port: 'Casablanca', country: 'Morocco', price: 31200, flag: '🇲🇦' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&h=400&fit=crop'
+      ],
+      videos: [
+        {
+          type: 'product',
+          url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+          thumbnail: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=200&h=150&fit=crop'
+        }
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-30T08:00:00Z',
+      expiresAt: '2025-01-31T08:00:00Z',
+      status: 'active',
+      reservations: 0,
+      views: 147
+    },
+    platformFees: {
+      platformFeePercent: 2,
+      escrowFee: 150,
+      depositPercent: 20
+    }
+  },
+  {
+    id: 'CA-2025-002',
+    productName: 'UHT Full Cream Milk',
+    productVariant: '1L Tetra Pack',
+    category: 'Dairy',
+    supplierId: 'baladna-food',
+    supplierName: 'Baladna Food Industries',
+    supplierCountry: 'Qatar',
+    supplierFlag: '🇶🇦',
+    supplierVerified: true,
+    container: {
+      type: '40ft Reefer',
+      quantity: 1,
+      cases: 2400,
+      grossWeight: '24 MT',
+      volume: '60 CBM'
+    },
+    origin: {
+      port: 'Hamad',
+      country: 'Qatar',
+      readyDate: '2025-01-30'
+    },
+    certifications: ['Halal', 'ISO 22000', 'ISO 9001'],
+    productDetails: {
+      shelfLife: '9 months',
+      storage: 'Room temperature before opening, refrigerate after',
+      minTemp: 2,
+      maxTemp: 8
+    },
+    targetMarkets: ['GCC', 'Middle East'],
+    deliveryPrices: [
+      { port: 'Dubai', country: 'UAE', price: 32400, flag: '🇦🇪' },
+      { port: 'Jeddah', country: 'Saudi Arabia', price: 34200, flag: '🇸🇦' },
+      { port: 'Muscat', country: 'Oman', price: 33100, flag: '🇴🇲' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=400&fit=crop'
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-30T06:00:00Z',
+      expiresAt: '2025-01-31T14:00:00Z',
+      status: 'active',
+      reservations: 0,
+      views: 89
+    },
+    platformFees: {
+      platformFeePercent: 2,
+      escrowFee: 150,
+      depositPercent: 20
+    }
+  },
+  {
+    id: 'CA-2025-003',
+    productName: 'Basmati Rice Premium',
+    productVariant: '25kg Bags',
+    category: 'Grains',
+    supplierId: 'al-rahma-rice',
+    supplierName: 'Al Rahma Rice Mills',
+    supplierCountry: 'Pakistan',
+    supplierFlag: '🇵🇰',
+    supplierVerified: true,
+    container: {
+      type: '20ft',
+      quantity: 1,
+      cases: 1000,
+      grossWeight: '25 MT',
+      volume: '32 CBM'
+    },
+    origin: {
+      port: 'Karachi',
+      country: 'Pakistan',
+      readyDate: '2025-01-30'
+    },
+    certifications: ['IPM', 'Halal', 'ISO 22000'],
+    productDetails: {
+      shelfLife: '24 months',
+      storage: 'Cool & dry place, away from direct sunlight'
+    },
+    targetMarkets: ['GCC', 'Middle East', 'East Africa'],
+    deliveryPrices: [
+      { port: 'Jeddah', country: 'Saudi Arabia', price: 42500, flag: '🇸🇦' },
+      { port: 'Dubai', country: 'UAE', price: 41200, flag: '🇦🇪' },
+      { port: 'Mombasa', country: 'Kenya', price: 44800, flag: '🇰🇪' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?w=400&h=400&fit=crop'
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-29T10:00:00Z',
+      expiresAt: '2025-01-30T22:00:00Z',
+      status: 'active',
+      reservations: 0,
+      views: 234
+    },
+    platformFees: {
+      platformFeePercent: 2,
+      escrowFee: 150,
+      depositPercent: 20
+    }
+  },
+  {
+    id: 'CA-2025-004',
+    productName: 'Premium Dates Medjool',
+    productVariant: '1kg Gift Box',
+    category: 'Dried Fruits',
+    supplierId: 'al-dhafrah-dates',
+    supplierName: 'Al Dhafrah Dates Co.',
+    supplierCountry: 'UAE',
+    supplierFlag: '🇦🇪',
+    supplierVerified: true,
+    container: {
+      type: '20ft',
+      quantity: 1,
+      cases: 800,
+      grossWeight: '12 MT',
+      volume: '28 CBM'
+    },
+    origin: {
+      port: 'Dubai',
+      country: 'UAE',
+      readyDate: '2025-01-29'
+    },
+    certifications: ['Halal', 'Organic', 'ISO 22000'],
+    productDetails: {
+      shelfLife: '18 months',
+      storage: 'Cool & dry place'
+    },
+    targetMarkets: ['Europe', 'Asia Pacific', 'North America'],
+    deliveryPrices: [
+      { port: 'Rotterdam', country: 'Netherlands', price: 35800, flag: '🇳🇱' },
+      { port: 'Hamburg', country: 'Germany', price: 36200, flag: '🇩🇪' },
+      { port: 'Singapore', country: 'Singapore', price: 38500, flag: '🇸🇬' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1596591606975-97ee5cef3a1e?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1568702846914-96b305d2uj87?w=400&h=400&fit=crop'
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-29T08:00:00Z',
+      expiresAt: '2025-01-30T08:00:00Z',
+      status: 'active',
+      reservations: 0,
+      views: 178
+    },
+    platformFees: {
+      platformFeePercent: 2,
+      escrowFee: 150,
+      depositPercent: 20
+    }
+  },
+  {
+    id: 'CA-2025-005',
+    productName: 'Frozen Chicken Breast',
+    productVariant: '2.5kg Bag (IQF)',
+    category: 'Meat & Poultry',
+    supplierId: 'nile-poultry',
+    supplierName: 'Nile Poultry Exports',
+    supplierCountry: 'Egypt',
+    supplierFlag: '🇪🇬',
+    supplierVerified: true,
+    container: {
+      type: '40ft Reefer',
+      quantity: 1,
+      cases: 1500,
+      grossWeight: '26 MT',
+      volume: '50 CBM'
+    },
+    origin: {
+      port: 'Port Said',
+      country: 'Egypt',
+      readyDate: '2025-01-30'
+    },
+    certifications: ['Halal', 'ISO 22000', 'HACCP', 'EU Export Approved'],
+    productDetails: {
+      shelfLife: '12 months',
+      storage: 'Frozen at -18°C or below'
+    },
+    targetMarkets: ['GCC', 'Middle East', 'West Africa'],
+    deliveryPrices: [
+      { port: 'Jeddah', country: 'Saudi Arabia', price: 48500, flag: '🇸🇦' },
+      { port: 'Dubai', country: 'UAE', price: 47200, flag: '🇦🇪' },
+      { port: 'Lagos', country: 'Nigeria', price: 51200, flag: '🇳🇬' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=400&h=400&fit=crop'
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-30T04:00:00Z',
+      expiresAt: '2025-01-31T04:00:00Z',
+      status: 'active',
+      reservations: 0,
+      views: 312
+    },
+    platformFees: {
+      platformFeePercent: 2,
+      escrowFee: 200,
+      depositPercent: 20
+    }
+  }
+];
+
+// ============================================
+// SUPPLIER CARGO AUCTION DATA
+// ============================================
+
+export interface SupplierCargoListing {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  supplierCountry: string;
+  supplierFlag: string;
+  supplierVerified: boolean;
+  productName: string;
+  productVariant: string;
+  category: string;
+  container: {
+    type: string;
+    quantity: number;
+    cases: number;
+    grossWeight: string;
+    volume?: string;
+  };
+  origin: {
+    port: string;
+    country: string;
+    readyDate: string;
+  };
+  certifications: string[];
+  productDetails: {
+    shelfLife: string;
+    storage: string;
+    minTemp?: number;
+    maxTemp?: number;
+  };
+  deliveryPrices: {
+    port: string;
+    country: string;
+    price: number;
+    flag: string;
+  }[];
+  media: {
+    images: string[];
+    videos?: {
+      type: string;
+      url: string;
+      thumbnail: string;
+    }[];
+  };
+  auction: {
+    createdAt: string;
+    expiresAt: string;
+    status: 'active' | 'reserved' | 'sold' | 'expired';
+    duration: number;
+    autoRenew: boolean;
+  };
+  stats: {
+    views: number;
+    reservations: number;
+  };
+}
+
+export interface SupplierCargoReservation {
+  id: string;
+  listingId: string;
+  buyerId: string;
+  buyerName: string;
+  buyerCompany: string;
+  buyerCountry: string;
+  buyerFlag: string;
+  contactPerson: string;
+  productName: string;
+  containerType: string;
+  destination: {
+    port: string;
+    country: string;
+    flag: string;
+  };
+  totalPrice: number;
+  depositPaid: number;
+  balanceOnArrival: number;
+  status: 'awaiting_dispatch' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: string;
+  shipByDate: string;
+  trackingInfo?: string;
+  blNumber?: string;
+  isUrgent: boolean;
+  timeRemaining: string;
+}
+
+export const supplierCargoListings: SupplierCargoListing[] = [
+  {
+    id: 'sup-cargo-001',
+    supplierId: 'ozmo-confectionery',
+    supplierName: 'OZMO Confectionery',
+    supplierCountry: 'Turkey',
+    supplierFlag: '🇹🇷',
+    supplierVerified: true,
+    productName: 'Chocolate Wafer Bars',
+    productVariant: '750g Family Pack',
+    category: 'Confectionery',
+    container: {
+      type: '40ft',
+      quantity: 1,
+      cases: 1200,
+      grossWeight: '18 MT',
+      volume: '55 CBM'
+    },
+    origin: {
+      port: 'Mersin',
+      country: 'Turkey',
+      readyDate: '2025-01-30'
+    },
+    certifications: ['Halal', 'ISO 22000', 'HACCP'],
+    productDetails: {
+      shelfLife: '12 months',
+      storage: 'Cool & dry place',
+      minTemp: 15,
+      maxTemp: 25
+    },
+    deliveryPrices: [
+      { port: 'Jeddah', country: 'Saudi Arabia', price: 28500, flag: '🇸🇦' },
+      { port: 'Dubai', country: 'UAE', price: 27200, flag: '🇦🇪' },
+      { port: 'Kuwait City', country: 'Kuwait', price: 29100, flag: '🇰🇼' },
+      { port: 'Doha', country: 'Qatar', price: 26800, flag: '🇶🇦' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop'
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-30T08:00:00Z',
+      expiresAt: '2025-01-31T08:00:00Z',
+      status: 'active',
+      duration: 24,
+      autoRenew: false
+    },
+    stats: {
+      views: 147,
+      reservations: 0
+    }
+  },
+  {
+    id: 'sup-cargo-002',
+    supplierId: 'baladna-food',
+    supplierName: 'Baladna Food Industries',
+    supplierCountry: 'Qatar',
+    supplierFlag: '🇶🇦',
+    supplierVerified: true,
+    productName: 'UHT Full Cream Milk',
+    productVariant: '1L Tetra Pack',
+    category: 'Dairy',
+    container: {
+      type: '40ft Reefer',
+      quantity: 1,
+      cases: 2400,
+      grossWeight: '24 MT',
+      volume: '60 CBM'
+    },
+    origin: {
+      port: 'Hamad',
+      country: 'Qatar',
+      readyDate: '2025-01-30'
+    },
+    certifications: ['Halal', 'ISO 22000', 'ISO 9001'],
+    productDetails: {
+      shelfLife: '9 months',
+      storage: 'Room temperature before opening, refrigerate after',
+      minTemp: 2,
+      maxTemp: 8
+    },
+    deliveryPrices: [
+      { port: 'Dubai', country: 'UAE', price: 32400, flag: '🇦🇪' },
+      { port: 'Jeddah', country: 'Saudi Arabia', price: 34200, flag: '🇸🇦' }
+    ],
+    media: {
+      images: [
+        'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=400&fit=crop'
+      ]
+    },
+    auction: {
+      createdAt: '2025-01-30T06:00:00Z',
+      expiresAt: '2025-01-31T14:00:00Z',
+      status: 'active',
+      duration: 24,
+      autoRenew: true
+    },
+    stats: {
+      views: 89,
+      reservations: 0
+    }
+  }
+];
+
+export const supplierCargoReservations: SupplierCargoReservation[] = [
+  {
+    id: 'CR-2025-0892',
+    listingId: 'sup-cargo-001',
+    buyerId: 'buyer-001',
+    buyerName: 'Ahmed Al Rashid',
+    buyerCompany: 'Al Meera Consumer Goods',
+    buyerCountry: 'Qatar',
+    buyerFlag: '🇶🇦',
+    contactPerson: 'Ahmed Al Rashid',
+    productName: 'Chocolate Wafer Bars 750g',
+    containerType: '40ft HC',
+    destination: {
+      port: 'Jeddah',
+      country: 'Saudi Arabia',
+      flag: '🇸🇦'
+    },
+    totalPrice: 28500,
+    depositPaid: 5700,
+    balanceOnArrival: 22800,
+    status: 'awaiting_dispatch',
+    createdAt: '2025-01-30T10:30:00Z',
+    shipByDate: '2025-02-01T10:30:00Z',
+    isUrgent: true,
+    timeRemaining: '46h 15m'
+  },
+  {
+    id: 'CR-2025-0891',
+    listingId: 'sup-cargo-002',
+    buyerId: 'buyer-002',
+    buyerName: 'Khalid Hassan',
+    buyerCompany: 'Union Coop UAE',
+    buyerCountry: 'UAE',
+    buyerFlag: '🇦🇪',
+    contactPerson: 'Khalid Hassan',
+    productName: 'UHT Full Cream Milk 1L',
+    containerType: '40ft Reefer',
+    destination: {
+      port: 'Dubai',
+      country: 'UAE',
+      flag: '🇦🇪'
+    },
+    totalPrice: 32400,
+    depositPaid: 6480,
+    balanceOnArrival: 25920,
+    status: 'shipped',
+    createdAt: '2025-01-28T14:00:00Z',
+    shipByDate: '2025-01-30T14:00:00Z',
+    trackingInfo: 'MAEU-7823456',
+    blNumber: 'HLC-DXB-2025-001234',
+    isUrgent: false,
+    timeRemaining: 'Shipped'
+  }
+];
+
+// Penalty Records
+export interface PenaltyRecord {
+  supplierId: string;
+  offense: 'cancellation' | 'late_ship' | 'false_listing';
+  date: string;
+  amount: number;
+  status: 'active' | 'resolved';
+  listingId?: string;
+  reservationId?: string;
+}
+
+export const supplierPenalties: PenaltyRecord[] = [];
+
+// Supplier Cargo Stats
+export const supplierCargoStats = {
+  totalListings: 24,
+  soldListings: 18,
+  conversionRate: 75,
+  avgTimeToSell: 14,
+  onTimeRate: 100,
+  supplierRating: 4.9,
+  cancellationPenalty: 0,
+  topDestinations: [
+    { port: 'Jeddah', country: 'Saudi Arabia', shipments: 8 },
+    { port: 'Dubai', country: 'UAE', shipments: 5 },
+    { port: 'Kuwait', country: 'Kuwait', shipments: 3 },
+    { port: 'Doha', country: 'Qatar', shipments: 2 },
+    { port: 'Casablanca', country: 'Morocco', shipments: 1 },
+  ],
+  revenueHistory: [
+    { month: 'Aug', revenue: 24500 },
+    { month: 'Sep', revenue: 32100 },
+    { month: 'Oct', revenue: 28900 },
+    { month: 'Nov', revenue: 41200 },
+    { month: 'Dec', revenue: 38500 },
+    { month: 'Jan', revenue: 43100 },
+  ]
 };

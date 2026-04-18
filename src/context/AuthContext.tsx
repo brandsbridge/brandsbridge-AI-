@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-type Role = 'guest' | 'supplier' | 'buyer' | 'shipping' | 'admin';
+type Role = 'guest' | 'supplier' | 'buyer' | 'shipping' | '3pl' | 'admin';
 
 interface User {
   id: string;
@@ -54,6 +54,13 @@ const DEMO_ACCOUNTS: Record<string, User> = {
     email: 'admin@brandsbridge.ai',
     company: 'Brands Bridge AI',
     role: 'admin'
+  },
+  '3pl@brandsbridge.ai': {
+    id: '5',
+    name: 'Gulf Cold Chain Co.',
+    email: '3pl@brandsbridge.ai',
+    company: 'Gulf Cold Chain Co.',
+    role: '3pl'
   }
 };
 

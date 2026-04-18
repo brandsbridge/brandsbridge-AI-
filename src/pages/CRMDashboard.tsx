@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   DollarSign,
   UserPlus,
@@ -27,10 +28,14 @@ import {
   Package,
   Video,
   Megaphone,
-  Ship
+  Ship,
+  Loader2,
+  Send,
+  Check
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SupplierSidebar from '../components/SupplierSidebar';
+import toast from 'react-hot-toast';
 
 // ============================================
 // CRM DATA TYPES
@@ -408,6 +413,7 @@ const getRelativeTime = (timestamp: string): string => {
 
 const CRMDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [deals, setDeals] = useState(sampleDeals);
   const [aiInsights] = useState(sampleAIInsights);
   const [tasks] = useState(sampleTasks);
@@ -415,6 +421,14 @@ const CRMDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [draggedDeal, setDraggedDeal] = useState<CRMPipelineDeal | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Deal move confirmation modal
+  const [showMoveConfirmModal, setShowMoveConfirmModal] = useState(false);
+  const [pendingMove, setPendingMove] = useState<{ deal: CRMPipelineDeal | null; targetStage: string }>({ deal: null, targetStage: '' });
+  const [isProcessingMove, setIsProcessingMove] = useState(false);
+
+  // Deal detail panel
+  const [selectedDeal, setSelectedDeal] = useState<CRMPipelineDeal | null>(null);
 
   // Calculate stats
   const totalPipelineValue = deals.reduce((sum, deal) => sum + deal.dealValue, 0);
@@ -450,6 +464,14 @@ const CRMDashboard = () => {
   const handleDrop = (e: React.DragEvent, stageId: string) => {
     e.preventDefault();
     if (draggedDeal) {
+      // If moving to closing, show confirmation modal
+      if (stageId === 'closing' && draggedDeal.stage !== 'closing') {
+        setPendingMove({ deal: draggedDeal, targetStage: stageId });
+        setShowMoveConfirmModal(true);
+        setDraggedDeal(null);
+        return;
+      }
+
       setDeals(prevDeals =>
         prevDeals.map(deal =>
           deal.id === draggedDeal.id
@@ -459,6 +481,33 @@ const CRMDashboard = () => {
       );
       setDraggedDeal(null);
     }
+  };
+
+  // Confirm move to closing
+  const confirmMoveToClosing = () => {
+    if (!pendingMove.deal) return;
+
+    setIsProcessingMove(true);
+
+    // Simulate processing
+    setTimeout(() => {
+      setDeals(prevDeals =>
+        prevDeals.map(deal =>
+          deal.id === pendingMove.deal!.id
+            ? { ...deal, stage: 'closing' as CRMPipelineDeal['stage'] }
+            : deal
+        )
+      );
+
+      toast.success(
+        `Deal moved to Closing!\nInvoice draft created in CRB Hub`,
+        { duration: 4000 }
+      );
+
+      setShowMoveConfirmModal(false);
+      setPendingMove({ deal: null, targetStage: '' });
+      setIsProcessingMove(false);
+    }, 1500);
   };
 
   // Get activity icon
@@ -667,6 +716,7 @@ const CRMDashboard = () => {
                               key={deal.id}
                               draggable
                               onDragStart={(e) => handleDragStart(e, deal)}
+                              onClick={() => setSelectedDeal(deal)}
                               className={`bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 cursor-grab active:cursor-grabbing hover:border-[#D4AF37]/50 transition-all duration-200 ${
                                 draggedDeal?.id === deal.id ? 'opacity-50 scale-95' : ''
                               }`}
@@ -947,6 +997,186 @@ const CRMDashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Move to Closing Confirmation Modal */}
+      {showMoveConfirmModal && pendingMove.deal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Move Deal to Closing?</h3>
+              <button onClick={() => setShowMoveConfirmModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {isProcessingMove ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mx-auto mb-4" />
+                <p className="text-slate-400">Moving deal and creating invoice draft...</p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-slate-800/50 rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold">{pendingMove.deal.companyName}</h4>
+                      <p className="text-slate-400 text-sm">{pendingMove.deal.contactName}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Deal Value:</span>
+                    <span className="text-emerald-400 font-bold">${pendingMove.deal.dealValue.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <p className="text-slate-400 text-sm mb-4">This will trigger:</p>
+                <div className="space-y-2 mb-6">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-slate-300">Generate invoice draft in CRB Hub</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-slate-300">Send notification to buyer</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-slate-300">Update pipeline forecast</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowMoveConfirmModal(false)}
+                    className="flex-1 py-3 bg-slate-700 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmMoveToClosing}
+                    className="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-5 h-5" />
+                    Confirm & Create Invoice
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Deal Detail Slide-in Panel */}
+      {selectedDeal && (
+        <div className="fixed inset-0 z-40 flex justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedDeal(null)} />
+          <div className="relative w-full max-w-md bg-[#111827] border-l border-slate-700 h-full overflow-y-auto">
+            <div className="sticky top-0 bg-[#111827] border-b border-slate-700 p-4 flex items-center justify-between z-10">
+              <h3 className="text-lg font-bold text-white">Deal Details</h3>
+              <button onClick={() => setSelectedDeal(null)} className="text-slate-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-6">
+              {/* Company Info */}
+              <div className="bg-slate-800/50 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-xl">
+                    {selectedDeal.companyLogo}
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold">{selectedDeal.companyName}</h4>
+                    <p className="text-slate-400 text-sm">{selectedDeal.contactName}</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Email:</span>
+                    <span className="text-white">{selectedDeal.contactEmail}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Phone:</span>
+                    <span className="text-white">{selectedDeal.contactPhone}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Country:</span>
+                    <span className="text-white">{selectedDeal.country}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deal Value */}
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                <span className="text-emerald-400 text-sm font-medium">Deal Value</span>
+                <div className="text-2xl font-bold text-white mt-1">${selectedDeal.dealValue.toLocaleString()}</div>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    selectedDeal.stage === 'new_leads' ? 'bg-blue-500/20 text-blue-400' :
+                    selectedDeal.stage === 'qualified' ? 'bg-amber-500/20 text-amber-400' :
+                    selectedDeal.stage === 'negotiation' ? 'bg-purple-500/20 text-purple-400' :
+                    'bg-emerald-500/20 text-emerald-400'
+                  }`}>
+                    {selectedDeal.stage.replace('_', ' ').toUpperCase()}
+                  </span>
+                  <span className="text-slate-400 text-sm">{selectedDeal.probability}% probability</span>
+                </div>
+              </div>
+
+              {/* Products */}
+              <div>
+                <h5 className="text-white font-semibold mb-3">Products in Deal</h5>
+                <div className="space-y-2">
+                  {selectedDeal.products.map((product, i) => (
+                    <div key={i} className="bg-slate-800/50 rounded-lg px-3 py-2 text-slate-300 text-sm">
+                      {product}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <h5 className="text-white font-semibold">Actions</h5>
+                <button
+                  onClick={() => navigate(`/live-deal-room?buyer=${selectedDeal.companyName}`)}
+                  className="w-full py-3 bg-red-500/20 border border-red-500/30 text-red-400 font-semibold rounded-xl hover:bg-red-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Video className="w-5 h-5" />
+                  Open Live Deal Room
+                </button>
+                <button
+                  onClick={() => navigate('/crb-hub')}
+                  className="w-full py-3 bg-amber-500/20 border border-amber-500/30 text-amber-400 font-semibold rounded-xl hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <FileText className="w-5 h-5" />
+                  Send Proposal
+                </button>
+                <button
+                  onClick={() => toast.success('Opening calendar...')}
+                  className="w-full py-3 bg-slate-700 border border-slate-600 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <Calendar className="w-5 h-5" />
+                  Schedule Call
+                </button>
+                <button
+                  onClick={() => {
+                    toast.success('AI generating follow-up email...');
+                    setTimeout(() => toast.success('Draft ready for review!'), 1500);
+                  }}
+                  className="w-full py-3 bg-blue-500/20 border border-blue-500/30 text-blue-400 font-semibold rounded-xl hover:bg-blue-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  AI Follow-up Email
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

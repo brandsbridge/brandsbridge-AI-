@@ -36,340 +36,15 @@ import {
   Eye,
   Anchor,
   Clock,
-  BarChart3
+  BarChart3,
+  Warehouse,
+  Lock,
+  CreditCard
 } from 'lucide-react';
-import { companies, categories, countries, Company } from '../data/mockData';
+import { companies, categories, countries, Company, threePLCompanies, cargoAuctions } from '../data/mockData';
+import VirtualBoothModal from '../components/VirtualBoothModal';
 
-type TabType = 'suppliers' | 'live' | 'shipping' | 'categories' | 'vr';
-
-// VR Waitlist Modal Component
-const VRWaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    companyName: '',
-    email: '',
-    country: '',
-    vrDevice: ''
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("🎉 You're on the VR beta list! We'll notify you before launch.");
-    onClose();
-    setFormData({ fullName: '', companyName: '', email: '', country: '', vrDevice: '' });
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111827] rounded-2xl border border-violet-500/50 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl shadow-violet-500/20">
-        {/* Header */}
-        <div className="p-6 border-b border-slate-700/50 relative">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          <div className="text-center mb-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🥽</span>
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-1">Join the VR Beta Waitlist</h3>
-            <p className="text-slate-400 text-sm">500+ companies already registered</p>
-          </div>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-slate-300 text-sm mb-2">Full Name *</label>
-            <input
-              type="text"
-              value={formData.fullName}
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-              placeholder="Your full name"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-slate-300 text-sm mb-2">Company Name *</label>
-            <input
-              type="text"
-              value={formData.companyName}
-              onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-              placeholder="Your company name"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-slate-300 text-sm mb-2">Email Address *</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-              placeholder="you@company.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-slate-300 text-sm mb-2">Country *</label>
-            <select
-              value={formData.country}
-              onChange={(e) => setFormData({...formData, country: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-              required
-            >
-              <option value="">Select your country</option>
-              <option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option>
-              <option value="🇦🇪 UAE">🇦🇪 UAE</option>
-              <option value="🇶🇦 Qatar">🇶🇦 Qatar</option>
-              <option value="🇰🇼 Kuwait">🇰🇼 Kuwait</option>
-              <option value="🇧🇭 Bahrain">🇧🇭 Bahrain</option>
-              <option value="🇴🇲 Oman">🇴🇲 Oman</option>
-              <option value="🇹🇷 Turkey">🇹🇷 Turkey</option>
-              <option value="🇩🇪 Germany">🇩🇪 Germany</option>
-              <option value="🇳🇱 Netherlands">🇳🇱 Netherlands</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-slate-300 text-sm mb-3">VR Device</label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: 'meta-quest-2', label: 'Meta Quest 2' },
-                { value: 'meta-quest-3', label: 'Meta Quest 3' },
-                { value: 'apple-vision', label: 'Apple Vision Pro' },
-                { value: 'webvr', label: 'Browser / WebVR' },
-                { value: 'none', label: "Don't have one yet" }
-              ].map((device) => (
-                <label
-                  key={device.value}
-                  className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all ${
-                    formData.vrDevice === device.value
-                      ? 'bg-violet-500/20 border-violet-500/50 text-violet-400'
-                      : 'bg-slate-700/30 border-slate-600/50 text-slate-400 hover:border-violet-500/30'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="vrDevice"
-                    value={device.value}
-                    checked={formData.vrDevice === device.value}
-                    onChange={(e) => setFormData({...formData, vrDevice: e.target.value})}
-                    className="sr-only"
-                  />
-                  <span className="text-sm font-medium">{device.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-900 rounded-xl font-bold text-lg hover:from-amber-300 hover:to-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30"
-          >
-            <span>🥽</span>
-            Reserve My VR Spot →
-          </button>
-
-          <div className="text-center text-sm text-slate-400 space-y-1 pt-2">
-            <p>✓ Free for early registrants</p>
-            <p>✓ Beta launches Q3 2025</p>
-            <p>✓ Limited spots available</p>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// VR Announcement Bar Component
-const VRAnnouncementBar = ({ onDismiss, onJoinWaitlist }: { onDismiss: () => void; onJoinWaitlist: () => void }) => (
-  <div
-    className="h-11 flex items-center justify-center relative"
-    style={{ background: 'linear-gradient(90deg, #0B5E75, #0EA5C9, #0B5E75)' }}
-  >
-    <div className="flex items-center gap-4 text-white text-sm">
-      <span>🥽 VR Expo Coming Q3 2025 •</span>
-      <span className="hidden sm:inline">Walk virtual booths from anywhere →</span>
-      <button
-        onClick={onJoinWaitlist}
-        className="text-amber-300 font-semibold hover:text-amber-200 transition-colors underline underline-offset-2"
-      >
-        Join Waitlist
-      </button>
-    </div>
-    <button
-      onClick={onDismiss}
-      className="absolute right-4 text-white/70 hover:text-white transition-colors p-1"
-      aria-label="Dismiss"
-    >
-      <X className="w-4 h-4" />
-    </button>
-  </div>
-);
-
-// VR Banner Component
-const VRBanner = ({ onJoinWaitlist, onLearnMore }: { onJoinWaitlist: () => void; onLearnMore: () => void }) => (
-  <div
-    className="my-6 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-[#162438]"
-    style={{
-      background: 'linear-gradient(135deg, #071120 0%, #0C1829 50%, #071120 100%)',
-    }}
-  >
-    {/* Floating Particles */}
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(8)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 rounded-full animate-float"
-          style={{
-            left: `${10 + i * 12}%`,
-            top: `${20 + (i % 3) * 25}%`,
-            background: i % 3 === 0 ? '#0EA5C9' : i % 3 === 1 ? '#D4AF37' : '#0EA5C9',
-            animationDelay: `${i * 0.5}s`,
-            animationDuration: `${3 + i * 0.5}s`,
-            opacity: 0.6 + (i % 3) * 0.1
-          }}
-        />
-      ))}
-    </div>
-
-    <div className="relative flex flex-col lg:flex-row items-center gap-8">
-      {/* Left: VR Headset SVG */}
-      <div className="lg:w-2/5 flex justify-center">
-        <svg
-          viewBox="0 0 240 150"
-          className="w-48 md:w-60 animate-float"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Glow effect */}
-          <defs>
-            <radialGradient id="glow">
-              <stop offset="0%" stopColor="#0EA5C9" stopOpacity="0.6"/>
-              <stop offset="100%" stopColor="#0EA5C9" stopOpacity="0"/>
-            </radialGradient>
-            <radialGradient id="lensGlow">
-              <stop offset="0%" stopColor="#0EA5C9" stopOpacity="0.8"/>
-              <stop offset="100%" stopColor="#0EA5C9" stopOpacity="0"/>
-            </radialGradient>
-          </defs>
-
-          {/* Ambient glow */}
-          <ellipse cx="120" cy="80" rx="100" ry="60" fill="url(#glow)"/>
-
-          {/* Headset body */}
-          <rect x="30" y="40" width="180" height="80" rx="25" fill="#071120" stroke="#0EA5C9" strokeWidth="2"/>
-
-          {/* Left lens */}
-          <ellipse cx="85" cy="80" rx="38" ry="30" fill="#050D1A" stroke="#D4AF37" strokeWidth="2"/>
-          <ellipse cx="85" cy="80" rx="25" ry="20" fill="url(#lensGlow)"/>
-
-          {/* Right lens */}
-          <ellipse cx="155" cy="80" rx="38" ry="30" fill="#050D1A" stroke="#D4AF37" strokeWidth="2"/>
-          <ellipse cx="155" cy="80" rx="25" ry="20" fill="url(#lensGlow)"/>
-
-          {/* Bridge between lenses */}
-          <rect x="113" y="72" width="14" height="16" rx="4" fill="#071120" stroke="#0EA5C9" strokeWidth="1"/>
-
-          {/* Left strap */}
-          <path d="M30 75 Q15 75 12 80 Q15 85 30 85" fill="#071120" stroke="#0EA5C9" strokeWidth="1.5"/>
-
-          {/* Right strap */}
-          <path d="M210 75 Q225 75 228 80 Q225 85 210 85" fill="#071120" stroke="#0EA5C9" strokeWidth="1.5"/>
-
-          {/* BB Logo on headset */}
-          <text x="120" y="25" textAnchor="middle" fill="#D4AF37" fontSize="11" fontFamily="Inter, sans-serif" fontWeight="bold">Brands Bridge AI</text>
-
-          {/* Sparkle dots */}
-          <circle cx="45" cy="45" r="2" fill="#D4AF37" opacity="0.8"/>
-          <circle cx="195" cy="45" r="2" fill="#D4AF37" opacity="0.8"/>
-          <circle cx="25" cy="100" r="1.5" fill="#0EA5C9" opacity="0.9"/>
-          <circle cx="215" cy="110" r="1.5" fill="#0EA5C9" opacity="0.9"/>
-          <circle cx="120" cy="140" r="2" fill="#0EA5C9" opacity="0.7"/>
-        </svg>
-      </div>
-
-      {/* Right: Content */}
-      <div className="lg:w-3/5 text-center lg:text-left">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#0EA5C9]/20 border border-[#0EA5C9]/30 rounded-full mb-4">
-          <span className="text-lg">🔮</span>
-          <span className="text-[#0EA5C9] text-sm font-medium">FUTURE FEATURE • Coming Q3 2025</span>
-        </div>
-
-        {/* Title */}
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-          Experience the Expo in <br className="hidden md:block" />
-          <span className="text-[#0EA5C9]">Virtual Reality</span>
-        </h2>
-
-        {/* Subtitle */}
-        <p className="text-[#D4AF37] text-lg font-medium mb-4">
-          Walk virtual booths. Meet exporters face-to-face.
-        </p>
-
-        {/* Description */}
-        <p className="text-[#94A3B8] text-sm mb-6 max-w-xl">
-          We are building the world's first immersive VR trade exhibition for FMCG companies.
-          Browse 500+ virtual booths, attend live sessions, and close deals — all in VR.
-        </p>
-
-        {/* 4 Mini Features */}
-        <div className="grid grid-cols-2 gap-3 mb-6 max-w-md mx-auto lg:mx-0">
-          {[
-            { icon: '🏛️', text: 'Virtual Booths' },
-            { icon: '🤝', text: 'Face-to-Face Meetings' },
-            { icon: '💰', text: 'Real-Time Deals' },
-            { icon: '🌍', text: '85+ Countries' }
-          ].map((feature, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-[#94A3B8] text-sm">
-              <span>{feature.icon}</span>
-              <span>{feature.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Compatible Devices */}
-        <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
-          <span className="text-[#475569] text-sm">Compatible with:</span>
-          {['Meta Quest', 'Apple Vision', 'WebVR'].map((device, idx) => (
-            <span key={idx} className="px-3 py-1 bg-[#0C1829] border border-[#162438] rounded-full text-xs text-[#94A3B8]">
-              {device}
-            </span>
-          ))}
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-          <button
-            onClick={onJoinWaitlist}
-            className="w-full sm:w-auto px-6 py-3 bg-[#D4AF37] text-[#050D1A] rounded-xl font-bold hover:bg-[#F0C842] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#D4AF37]/30"
-          >
-            <span>🥽</span>
-            Join VR Waitlist →
-          </button>
-          <button
-            onClick={onLearnMore}
-            className="w-full sm:w-auto px-6 py-3 bg-transparent border border-[#0EA5C9]/50 text-[#0EA5C9] rounded-xl font-semibold hover:bg-[#0EA5C9]/10 transition-all"
-          >
-            Learn More
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+type TabType = 'suppliers' | 'live' | 'shipping' | 'cargo' | 'categories';
 
 const CompaniesPage = () => {
   const navigate = useNavigate();
@@ -377,11 +52,15 @@ const CompaniesPage = () => {
   // Tab State
   const [activeTab, setActiveTab] = useState<TabType>('suppliers');
 
-  // VR Announcement Bar State
-  const [showAnnouncement, setShowAnnouncement] = useState(true);
+  // Virtual Booth Modal State
+  const [showVirtualBooth, setShowVirtualBooth] = useState(false);
+  const [boothCompany, setBoothCompany] = useState<Company | null>(null);
 
-  // VR Waitlist Modal State
-  const [showVRWaitlist, setShowVRWaitlist] = useState(false);
+  // Handle opening Virtual Booth
+  const handleOpenVirtualBooth = (company: Company) => {
+    setBoothCompany(company);
+    setShowVirtualBooth(true);
+  };
 
   // Live session timer
   const [liveTime, setLiveTime] = useState(4525); // 01:15:25 in seconds
@@ -620,6 +299,7 @@ const CompaniesPage = () => {
   const [shippingRegion, setShippingRegion] = useState('');
   const [containerType, setContainerType] = useState('');
   const [sortBy, setSortBy] = useState('reliability');
+  const [shippingSubTab, setShippingSubTab] = useState<'freight' | '3pl'>('freight');
 
   // Categories Data
   const categoriesData = [
@@ -878,16 +558,6 @@ const CompaniesPage = () => {
     setShowFreightQuoteModal(true);
   };
 
-  // VR Handler
-  const handleVRWaitlist = () => {
-    setShowVRWaitlist(true);
-  };
-
-  const handleVRLearnMore = () => {
-    setActiveTab('vr');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   // Filtered Companies
   const filteredCompanies = useMemo(() => {
     return companies.filter((company) => {
@@ -921,13 +591,6 @@ const CompaniesPage = () => {
     <div className="min-h-screen" style={{ background: '#050D1A' }}>
       {/* Gold Line */}
       <div style={{ height: '2px', background: 'linear-gradient(90deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)' }} />
-      {/* VR Announcement Bar */}
-      {showAnnouncement && (
-        <VRAnnouncementBar
-          onDismiss={() => setShowAnnouncement(false)}
-          onJoinWaitlist={handleVRWaitlist}
-        />
-      )}
 
       {/* AI Hero Search Section */}
       <div style={{ background: 'linear-gradient(135deg, #071120 0%, #0C1829 50%, #071120 100%)', borderBottom: '1px solid #162438' }}>
@@ -1268,9 +931,9 @@ const CompaniesPage = () => {
               </span>
             </button>
 
-            {/* Tab 5: VR Expo - NEW */}
+            {/* Tab 5: Cargo Auction */}
             <button
-              onClick={() => setActiveTab('vr')}
+              onClick={() => setActiveTab('cargo')}
               style={{
                 fontFamily: 'Inter',
                 fontWeight: 600,
@@ -1283,43 +946,37 @@ const CompaniesPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                ...(activeTab === 'vr' ? {
-                  background: '#0EA5C9',
-                  color: 'white',
-                  boxShadow: '0 4px 16px rgba(14,165,201,0.3)'
+                ...(activeTab === 'cargo' ? {
+                  background: '#D4AF37',
+                  color: '#050D1A',
+                  boxShadow: '0 4px 16px rgba(212,175,55,0.3)'
                 } : {
                   background: 'transparent',
                   color: '#94A3B8'
                 })
               }}
             >
-              <span className="text-lg">🥽</span>
-              VR Expo
+              <span className="text-lg">🔥</span>
+              Cargo Auction
               <span style={{
                 padding: '2px 8px',
                 borderRadius: '100px',
                 fontSize: '12px',
                 fontWeight: 600,
-                background: 'rgba(14,165,201,0.2)',
-                color: '#0EA5C9',
-                border: '1px solid rgba(14,165,201,0.3)'
+                ...(activeTab === 'cargo' ? {
+                  background: 'rgba(5,13,26,0.3)',
+                  color: '#050D1A'
+                } : {
+                  background: '#D4AF37',
+                  color: '#050D1A'
+                })
               }}>
-                SOON
+                {cargoAuctions.filter(a => a.auction.status === 'active').length}
               </span>
             </button>
           </div>
         </div>
       </div>
-
-      {/* VR Banner - Shows on ALL tabs except VR tab */}
-      {activeTab !== 'vr' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <VRBanner
-            onJoinWaitlist={handleVRWaitlist}
-            onLearnMore={handleVRLearnMore}
-          />
-        </div>
-      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ========== TAB 1: SUPPLIERS (Existing Content) ========== */}
@@ -1702,6 +1359,7 @@ const CompaniesPage = () => {
                         onRequestQuote={() => handleRequestQuote(company)}
                         onBookMeeting={() => handleBookMeeting(company)}
                         onViewCargo={handleViewCargo}
+                        onVirtualBooth={() => handleOpenVirtualBooth(company)}
                       />
                     </div>
                   ))}
@@ -1977,6 +1635,42 @@ const CompaniesPage = () => {
               </select>
             </div>
 
+            {/* Shipping Sub-Tabs: Freight Forwarders | 3PL & Cold Storage */}
+            <div className="flex gap-3 mb-8 p-1 bg-slate-800/30 rounded-xl w-fit">
+              <button
+                onClick={() => setShippingSubTab('freight')}
+                className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                style={{
+                  background: shippingSubTab === 'freight' ? '#0EA5C9' : 'transparent',
+                  color: shippingSubTab === 'freight' ? 'white' : '#94A3B8'
+                }}
+              >
+                <Truck className="w-4 h-4" />
+                Freight Forwarders
+              </button>
+              <button
+                onClick={() => setShippingSubTab('3pl')}
+                className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                style={{
+                  background: shippingSubTab === '3pl' ? '#0EA5C9' : 'transparent',
+                  color: shippingSubTab === '3pl' ? 'white' : '#94A3B8'
+                }}
+              >
+                <Warehouse className="w-4 h-4" />
+                3PL & Cold Storage
+                <span className="px-2 py-0.5 rounded-full text-xs" style={{
+                  background: shippingSubTab === '3pl' ? 'rgba(255,255,255,0.2)' : '#0C1829',
+                  color: shippingSubTab === '3pl' ? 'white' : '#94A3B8'
+                }}>
+                  3
+                </span>
+              </button>
+            </div>
+
+            {/* Freight Forwarders Content */}
+            {shippingSubTab === 'freight' && (
+              <>
+
             {/* Shipping Companies Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {shippingCompanies.map((company) => (
@@ -2075,6 +1769,127 @@ const CompaniesPage = () => {
                 </div>
               ))}
             </div>
+              </>
+            )}
+
+            {/* 3PL & Cold Storage Content */}
+            {shippingSubTab === '3pl' && (
+              <>
+                {/* 3PL Banner */}
+                <div className="bg-gradient-to-r from-cyan-500/20 to-cyan-600/10 border border-cyan-500/30 rounded-2xl p-6 mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-cyan-500/20 rounded-2xl flex items-center justify-center">
+                      <Warehouse className="w-8 h-8 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1">
+                        Temperature-Controlled Storage Solutions
+                      </h2>
+                      <p className="text-slate-400 text-sm">
+                        15+ Verified 3PL Providers | Frozen, Chilled & Ambient Storage | AI Reliability Scores
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3PL Companies Grid */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {threePLCompanies.map((company) => (
+                    <div
+                      key={company.id}
+                      className="bg-[#111827] border border-slate-700/50 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all hover:shadow-xl hover:shadow-cyan-500/10"
+                    >
+                      <div className="p-5">
+                        {/* Company Header */}
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl bg-cyan-500/20">
+                            {company.logo}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="text-white font-bold">{company.name}</h3>
+                              <BadgeCheck className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <div className="flex items-center gap-2 text-slate-400 text-sm">
+                              <MapPin className="w-3 h-3" />
+                              <span>{company.city}, {company.country}</span>
+                              <span>{company.countryFlag}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-slate-400 text-sm mb-4">{company.tagline}</p>
+
+                        {/* AI Reliability */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <BarChart3 className="w-4 h-4 text-[#D4AF37]" />
+                              <span className="text-white text-sm font-medium">AI Reliability</span>
+                            </div>
+                            <span className="text-cyan-400 font-bold">{company.aiReliability}%</span>
+                          </div>
+                          <div className="w-full bg-slate-700 rounded-full h-2">
+                            <div
+                              className="bg-gradient-to-r from-cyan-500 to-cyan-400 h-2 rounded-full transition-all"
+                              style={{ width: `${company.aiReliability}%` }}
+                            ></div>
+                          </div>
+                        </div>
+
+                        {/* Storage Services */}
+                        <div className="mb-4">
+                          <span className="text-slate-400 text-xs font-medium">Storage Zones:</span>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {company.services.map((service, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded text-xs text-cyan-300">
+                                {service}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Certifications */}
+                        <div className="mb-4">
+                          <span className="text-slate-400 text-xs font-medium">Certifications:</span>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {company.certifications.slice(0, 2).map((cert, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded text-xs text-amber-300">
+                                <Shield className="w-3 h-3 inline mr-1" />
+                                {cert}
+                              </span>
+                            ))}
+                            {company.certifications.length > 2 && (
+                              <span className="px-2 py-1 bg-slate-700/50 rounded text-xs text-slate-400">
+                                +{company.certifications.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Capacity Info */}
+                        <div className="flex items-center justify-between text-sm text-slate-400 mb-4 pt-3 border-t border-slate-700/50">
+                          <span>{company.totalCapacity.toLocaleString()} pallets</span>
+                          <span className="text-cyan-400">{company.availableNow.toLocaleString()} available</span>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-600/80 text-white rounded-lg font-medium hover:shadow-lg transition-all text-sm"
+                          >
+                            Request Storage Quote
+                          </button>
+                          <button className="px-4 py-2.5 bg-slate-700/50 border border-slate-600/50 text-slate-300 rounded-lg font-medium hover:bg-slate-600/50 transition-all text-sm">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -2150,204 +1965,178 @@ const CompaniesPage = () => {
           </div>
         )}
 
-        {/* ========== TAB 5: VR EXPO ========== */}
-        {activeTab === 'vr' && (
+
+        {/* ========== TAB: CARGO AUCTION ========== */}
+        {activeTab === 'cargo' && (
           <div>
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/20 border border-violet-500/30 rounded-full mb-4">
-                <span className="text-2xl">🥽</span>
-                <span className="text-violet-300 text-sm font-medium">Coming Q3 2025</span>
+            {/* Header Banner */}
+            <div className="bg-gradient-to-r from-slate-900 via-amber-900 to-slate-900 rounded-2xl p-8 mb-8 text-white">
+              <div className="flex items-center gap-2 text-amber-400 text-sm font-medium mb-3">
+                <Ship className="w-5 h-5" />
+                <span>DAILY CARGO AUCTION</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                Virtual Reality Expo Hall
-              </h2>
-              <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-                The future of FMCG trade is almost here
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Reserve Cargo Before Others</h2>
+              <p className="text-amber-100 max-w-2xl mb-6">
+                Exclusive access to ready-to-ship containers at fixed delivered prices.
+                Pay 20% deposit to secure your cargo. First come, first served.
               </p>
-            </div>
-
-            {/* 3 Feature Cards */}
-            <div className="grid md:grid-cols-3 gap-6 mb-10">
-              {/* Card 1: Virtual Exhibition Hall */}
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-violet-500/30 rounded-2xl p-6 hover:border-violet-500/50 transition-all hover:shadow-xl hover:shadow-violet-500/10">
-                <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
-                  <span className="text-3xl">🏛️</span>
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl">
+                  <Lock className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm">Escrow Protected</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Virtual Exhibition Hall</h3>
-                <p className="text-slate-400 text-sm mb-4">
-                  Walk through immersive 3D booths with 500+ FMCG companies from around the world.
-                </p>
-                <div className="inline-flex items-center px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-400 text-xs font-medium mb-4">
-                  In Development
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl">
+                  <Shield className="w-4 h-4 text-amber-400" />
+                  <span className="text-sm">Platform Guarantee</span>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-slate-400">Progress</span>
-                    <span className="text-violet-400 font-semibold">65%</span>
-                  </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-violet-500 to-purple-500 h-2 rounded-full"
-                      style={{ width: '65%' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2: Face-to-Face VR Meetings */}
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-blue-500/30 rounded-2xl p-6 hover:border-blue-500/50 transition-all hover:shadow-xl hover:shadow-blue-500/10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center mb-4">
-                  <span className="text-3xl">🤝</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Face-to-Face VR Meetings</h3>
-                <p className="text-slate-400 text-sm mb-4">
-                  Meet exporters as if you're in the same room, anywhere in the world. Full body tracking.
-                </p>
-                <div className="inline-flex items-center px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-400 text-xs font-medium mb-4">
-                  Coming Q3 2025
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-slate-400">Progress</span>
-                    <span className="text-blue-400 font-semibold">35%</span>
-                  </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full"
-                      style={{ width: '35%' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3: VR Deal Closing */}
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-amber-500/30 rounded-2xl p-6 hover:border-amber-500/50 transition-all hover:shadow-xl hover:shadow-amber-500/10">
-                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center mb-4">
-                  <span className="text-3xl">💰</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">VR Deal Closing</h3>
-                <p className="text-slate-400 text-sm mb-4">
-                  Negotiate, sign contracts, and make payments inside the virtual world with escrow protection.
-                </p>
-                <div className="inline-flex items-center px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-400 text-xs font-medium mb-4">
-                  Coming Q4 2025
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-slate-400">Progress</span>
-                    <span className="text-amber-400 font-semibold">15%</span>
-                  </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full"
-                      style={{ width: '15%' }}
-                    ></div>
-                  </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl">
+                  <BadgeCheck className="w-4 h-4 text-blue-400" />
+                  <span className="text-sm">KYB Verified Sellers</span>
                 </div>
               </div>
             </div>
 
-            {/* Virtual Booth Preview */}
-            <div className="mb-10">
-              <h3 className="text-2xl font-bold text-white mb-2 text-center">Sneak Peek: Virtual Booths</h3>
-              <p className="text-slate-400 text-center mb-6">A preview of what to expect in Q3 2025</p>
-
-              <div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-                style={{ perspective: '800px' }}
-              >
+            {/* How It Works */}
+            <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 mb-8">
+              <h3 className="text-xl font-bold text-white mb-6">How Cargo Auction Works</h3>
+              <div className="grid md:grid-cols-4 gap-6">
                 {[
-                  { name: 'Almarai', country: 'Saudi Arabia', flag: '🇸🇦' },
-                  { name: 'OZMO', country: 'Turkey', flag: '🇹🇷' },
-                  { name: 'Golden Dates', country: 'UAE', flag: '🇦🇪' },
-                  { name: 'Baladna', country: 'Qatar', flag: '🇶🇦' }
-                ].map((company, idx) => (
-                  <div
-                    key={idx}
-                    className="relative bg-gradient-to-br from-teal-900/50 to-slate-900/80 border border-teal-500/30 rounded-2xl p-6 text-center transform hover:scale-105 transition-all"
-                    style={{
-                      transform: `rotateX(10deg)`,
-                      boxShadow: '0 20px 40px rgba(11, 94, 117, 0.2)'
-                    }}
-                  >
-                    <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl mx-auto mb-4 flex items-center justify-center">
-                      <Building2 className="w-10 h-10 text-slate-500" />
+                  { step: 1, icon: '🔍', title: 'Browse Cargo', desc: 'View available containers with delivered prices' },
+                  { step: 2, icon: '📍', title: 'Select Port', desc: 'Choose your destination port' },
+                  { step: 3, icon: '💳', title: 'Pay 20% Deposit', desc: 'Secure your reservation instantly' },
+                  { step: 4, icon: '📦', title: 'Receive Cargo', desc: 'Pay balance on arrival, receive goods' }
+                ].map((item) => (
+                  <div key={item.step} className="flex gap-3">
+                    <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center font-bold flex-shrink-0">
+                      {item.step}
                     </div>
-                    <div className="text-2xl mb-2">{company.flag}</div>
-                    <h4 className="text-white font-bold mb-1">{company.name}</h4>
-                    <p className="text-slate-400 text-sm mb-4">{company.country}</p>
-                    <div className="inline-flex items-center px-3 py-1 bg-teal-500/20 border border-teal-500/30 rounded-full text-teal-400 text-xs font-medium mb-3">
-                      Virtual Booth
+                    <div>
+                      <div className="font-semibold text-white flex items-center gap-2">
+                        <span>{item.icon}</span>
+                        {item.title}
+                      </div>
+                      <div className="text-sm text-slate-400">{item.desc}</div>
                     </div>
-                    <button
-                      onClick={() => toast.success('🥽 VR access coming soon! Join our waitlist to be first.')}
-                      className="w-full py-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-semibold text-sm hover:from-teal-500 hover:to-cyan-500 transition-all"
-                    >
-                      Enter Booth →
-                    </button>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Roadmap */}
-            <div className="mb-10 bg-slate-800/30 rounded-2xl p-8 border border-slate-700/50">
-              <h3 className="text-2xl font-bold text-white mb-6 text-center">Development Roadmap</h3>
-
-              <div className="relative">
-                {/* Timeline Line */}
-                <div className="hidden md:block absolute top-6 left-0 right-0 h-1 bg-slate-700">
-                  <div className="absolute left-[12.5%] w-1/4 bg-gradient-to-r from-emerald-500 to-emerald-500 h-full"></div>
-                  <div className="absolute left-[37.5%] w-1/4 bg-gradient-to-r from-blue-500 to-blue-500 h-full"></div>
-                  <div className="absolute left-[62.5%] w-1/4 bg-gradient-to-r from-violet-500 to-violet-500 h-full"></div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {[
-                    { quarter: 'Q1 2025', status: '✅', title: 'Digital Platform Live', desc: 'Core platform operational', color: 'emerald' },
-                    { quarter: 'Q2 2025', status: '🔄', title: 'WebVR Foundation', desc: 'Building VR infrastructure', color: 'blue' },
-                    { quarter: 'Q3 2025', status: '🔜', title: 'VR Beta Launch', desc: 'Early access for waitlist', color: 'violet' },
-                    { quarter: '2026', status: '🌟', title: 'Full VR Trade Network', desc: 'Global VR expo network', color: 'amber' }
-                  ].map((item, idx) => (
-                    <div key={idx} className="relative text-center">
-                      <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center text-2xl mb-3 bg-slate-800 border-2 border-${item.color}-500`}>
-                        {item.status}
-                      </div>
-                      <div className={`text-${item.color}-400 text-xs font-semibold mb-1`}>{item.quarter}</div>
-                      <h4 className="text-white font-bold mb-1">{item.title}</h4>
-                      <p className="text-slate-400 text-sm">{item.desc}</p>
-                    </div>
-                  ))}
-                </div>
+            {/* Active Cargo Listings */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white">
+                  Active Cargo ({cargoAuctions.filter(a => a.auction.status === 'active').length})
+                </h3>
+                <Link
+                  to="/auction"
+                  className="px-4 py-2 bg-amber-500 text-slate-900 rounded-xl font-semibold hover:bg-amber-400 transition-colors inline-flex items-center gap-2"
+                >
+                  View Full Page
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
 
-            {/* Bottom CTA */}
-            <div className="text-center bg-gradient-to-r from-violet-900/50 to-purple-900/50 rounded-2xl p-8 border border-violet-500/30">
-              <h3 className="text-2xl font-bold text-white mb-3">
-                Don't miss the VR revolution in FMCG trade
-              </h3>
-              <p className="text-slate-400 mb-6">
-                Join 500+ companies already on the waitlist
-              </p>
-              <button
-                onClick={handleVRWaitlist}
-                className="px-8 py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-900 rounded-xl font-bold text-lg hover:from-amber-300 hover:to-amber-400 transition-all inline-flex items-center gap-2 shadow-lg shadow-amber-500/30"
-              >
-                <span>🥽</span>
-                Secure Your VR Spot →
-              </button>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cargoAuctions.filter(a => a.auction.status === 'active').slice(0, 6).map((auction) => (
+                <div key={auction.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-amber-500/50 transition-all">
+                  {/* Product Image */}
+                  <div className="relative aspect-video bg-slate-700">
+                    <img
+                      src={auction.media.images[0]}
+                      alt={auction.productName}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-3 left-3">
+                      <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
+                        Available
+                      </span>
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <span className="px-3 py-1 bg-slate-900/80 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                        {auction.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-5">
+                    <h4 className="text-lg font-bold text-white mb-1">{auction.productName}</h4>
+                    <p className="text-slate-400 text-sm mb-3">{auction.productVariant}</p>
+
+                    {/* Supplier */}
+                    <Link
+                      to={`/companies/${auction.supplierId}`}
+                      className="flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors mb-3"
+                    >
+                      <span>{auction.supplierFlag}</span>
+                      <span className="text-sm">{auction.supplierName}</span>
+                      {auction.supplierVerified && <BadgeCheck className="w-4 h-4 text-emerald-400" />}
+                    </Link>
+
+                    {/* Container Info */}
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                      <div className="flex items-center gap-1 text-slate-400">
+                        <Package className="w-4 h-4" />
+                        <span>{auction.container.type}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-slate-400">
+                        <MapPin className="w-4 h-4" />
+                        <span>{auction.origin.port}</span>
+                      </div>
+                    </div>
+
+                    {/* Min Price */}
+                    <div className="bg-amber-50 rounded-xl p-3 mb-4 text-center">
+                      <div className="text-xs text-amber-600 mb-1">From CIF</div>
+                      <div className="text-xl font-bold text-slate-900">
+                        ${Math.min(...auction.deliveryPrices.map(dp => dp.price)).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        to {auction.deliveryPrices[0].country}
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    <Link
+                      to="/auction"
+                      className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold rounded-xl hover:from-amber-400 hover:to-amber-500 transition-all flex items-center justify-center gap-2"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      Reserve Now
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA for Sellers */}
+            <div className="mt-10 bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 border border-amber-500/30">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-2">Have Cargo to Sell?</h3>
+                  <p className="text-slate-300">List your containers and reach buyers across 85+ countries.</p>
+                </div>
+                <Link
+                  to="/register"
+                  className="px-6 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors whitespace-nowrap"
+                >
+                  List Your Cargo
+                </Link>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* VR Waitlist Modal */}
-      <VRWaitlistModal
-        isOpen={showVRWaitlist}
-        onClose={() => setShowVRWaitlist(false)}
-      />
+      {/* Virtual Booth Modal */}
+      {showVirtualBooth && boothCompany && (
+        <VirtualBoothModal
+          company={boothCompany}
+          onClose={() => setShowVirtualBooth(false)}
+        />
+      )}
 
       {/* Send Inquiry Modal */}
       {showInquiryModal && selectedCompany && (
@@ -2433,7 +2222,8 @@ const BridgeCard = ({
   onSendInquiry,
   onRequestQuote,
   onBookMeeting,
-  onViewCargo
+  onViewCargo,
+  onVirtualBooth
 }: {
   company: Company;
   buyerData: { companyName: string; country: string; contactName: string; email: string };
@@ -2441,6 +2231,7 @@ const BridgeCard = ({
   onRequestQuote: () => void;
   onBookMeeting: () => void;
   onViewCargo: () => void;
+  onVirtualBooth: () => void;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
@@ -2470,13 +2261,16 @@ const BridgeCard = ({
               )}
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h3 className="text-xl font-bold text-white">{company.name}</h3>
                 {company.verified && (
                   <span className="px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-400 text-xs font-bold">
                     KYB VERIFIED
                   </span>
                 )}
+                <span className="px-2 py-0.5 bg-purple-500/10 border border-purple-500/30 rounded-full text-purple-400 text-xs font-medium flex items-center gap-1">
+                  🥽 Virtual Booth Available
+                </span>
               </div>
               <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
                 <span>{company.countryFlag}</span>
@@ -2532,8 +2326,38 @@ const BridgeCard = ({
           )}
         </div>
 
-        {/* 4 Direct Action Buttons - The Bridge */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* 5 Direct Action Buttons - The Bridge */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {/* Virtual Booth Button - 5th button */}
+          <button
+            onClick={onVirtualBooth}
+            style={{
+              background: 'linear-gradient(135deg, #4c1d95, #7c3aed)',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(124, 58, 237, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(124, 58, 237, 0.3)';
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>🥽</span>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ color: 'white', fontWeight: 600, fontSize: '13px', fontFamily: 'Inter' }}>Virtual Booth</div>
+              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px', fontFamily: 'Inter' }}>Visit virtually</div>
+            </div>
+          </button>
           <button
             onClick={onSendInquiry}
             className="group relative px-4 py-3.5 bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl text-left overflow-hidden transition-all hover:from-blue-500/30 hover:to-blue-600/30"

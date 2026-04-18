@@ -22,6 +22,7 @@ const LoginPage = () => {
       const dashboardPath = user.role === 'supplier' ? '/supplier/dashboard' :
                             user.role === 'buyer' ? '/buyer/dashboard' :
                             user.role === 'shipping' ? '/freight/dashboard' :
+                            user.role === '3pl' ? '/3pl/dashboard' :
                             user.role === 'admin' ? '/super-admin' : '/';
       navigate(dashboardPath);
     }
@@ -75,6 +76,8 @@ const LoginPage = () => {
     { role: 'Supplier', email: 'supplier@brandsbridge.ai', color: 'from-amber-500 to-orange-600', icon: '🏭' },
     { role: 'Buyer', email: 'buyer@brandsbridge.ai', color: 'from-blue-500 to-cyan-600', icon: '🛒' },
     { role: 'Freight', email: 'shipping@brandsbridge.ai', color: 'from-emerald-500 to-teal-600', icon: '🚢' },
+    { role: '3PL Portal', email: '3pl@brandsbridge.ai', color: 'from-cyan-500 to-blue-600', icon: '❄️' },
+    { role: 'Admin', email: 'admin@brandsbridge.ai', color: 'from-purple-500 to-pink-600', icon: '⚙️' },
   ];
 
   return (
