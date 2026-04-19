@@ -55,12 +55,33 @@ import CreateCargoListing from './pages/supplier/CreateCargoListing';
 import CargoReservations from './pages/supplier/CargoReservations';
 import CargoPerformance from './pages/supplier/CargoPerformance';
 
+const LoadingScreen = () => (
+  <div
+    className="h-screen w-screen flex flex-col items-center justify-center gap-4"
+    style={{ background: '#0A0F1E' }}
+  >
+    <div
+      className="animate-spin rounded-full"
+      style={{
+        width: 48,
+        height: 48,
+        border: '4px solid rgba(212, 175, 55, 0.2)',
+        borderTopColor: '#D4AF37',
+      }}
+    />
+    <p style={{ color: '#94A3B8', fontSize: 14 }}>Loading Brands Bridge...</p>
+  </div>
+);
+
 // Protected route wrapper
 const ProtectedRoute = ({ children, allowedRoles }: {
   children: React.ReactNode;
   allowedRoles?: string[];
 }) => {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, loading } = useAuth();
+  if (loading) {
+    return <LoadingScreen />;
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -73,6 +94,11 @@ const ProtectedRoute = ({ children, allowedRoles }: {
 // Inner app (has access to AuthContext and BuyerContext)
 const AppRoutes = () => {
   const location = useLocation();
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   // Check if current path is a dashboard (has its own header)
   const isDashboard =

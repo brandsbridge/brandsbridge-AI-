@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, loginAsDemo, user } = useAuth();
 
   useEffect(() => {
     document.title = 'Brands Bridge AI | Sign In';
@@ -28,39 +28,50 @@ const LoginPage = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const attemptLogin = async (loginEmail: string, loginPassword: string) => {
     setError('');
     setIsLoading(true);
-
     try {
-      const success = login(email, password);
+      const success = await login(loginEmail, loginPassword);
       if (success) {
-        toast.success('Welcome back! Redirecting...');
+        toast.success('Welcome back!');
       } else {
-        setError('Invalid email or password. Try a demo account below.');
-        toast.error('Invalid credentials');
+        const msg = 'Invalid credentials or no profile found';
+        setError(msg);
+        toast.error(msg);
       }
     } catch {
-      setError('Login failed. Please try again.');
-      toast.error('Login failed');
+      const msg = 'Login failed. Please try again';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDemoLogin = (demoEmail: string) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await attemptLogin(email, password);
+  };
+
+  const handleDemoLogin = async (demoEmail: string) => {
     setEmail(demoEmail);
     setPassword('demo123');
     setError('');
     setIsLoading(true);
-
     try {
-      login(demoEmail, 'demo123');
-      toast.success('Logging in...');
+      const success = await loginAsDemo(demoEmail);
+      if (success) {
+        toast.success('Welcome back! (Demo mode)');
+      } else {
+        const msg = 'Demo account not found';
+        setError(msg);
+        toast.error(msg);
+      }
     } catch {
-      setError('Demo login failed.');
-      toast.error('Demo login failed');
+      const msg = 'Demo login failed';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -211,7 +222,10 @@ const LoginPage = () => {
                 className="w-full py-4 bg-gradient-to-r from-[#0B5E75] to-[#0B5E75]/80 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#0B5E75]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Signing in...
+                  </>
                 ) : (
                   <>
                     Sign In

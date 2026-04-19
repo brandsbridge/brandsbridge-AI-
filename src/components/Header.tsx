@@ -6,7 +6,7 @@ import { Globe, ChevronDown, User, Settings, CreditCard, LogOut } from 'lucide-r
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isDemo } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeLink, setActiveLink] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -407,6 +407,21 @@ const Header = () => {
 
         {/* Auth / User Section */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {isDemo && (
+            <div style={{
+              padding: '4px 10px',
+              borderRadius: '8px',
+              background: 'rgba(245, 158, 11, 0.15)',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
+              color: '#F59E0B',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              lineHeight: 1.4,
+            }}>
+              🧪 DEMO MODE
+            </div>
+          )}
           {user ? (
             <div ref={dropdownRef} style={{ position: 'relative' }}>
               <button
