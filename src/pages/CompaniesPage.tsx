@@ -306,7 +306,6 @@ const CompaniesPage = () => {
     {
       id: 'confectionery',
       name: 'Confectionery & Chocolate',
-      count: 245,
       description: 'Chocolates, candies, sweets',
       image: 'https://images.unsplash.com/photo-1481391243133-f96216dcb5d2?w=400',
       color: 'from-amber-600/80 to-amber-900/80'
@@ -314,7 +313,6 @@ const CompaniesPage = () => {
     {
       id: 'dairy',
       name: 'Dairy Products',
-      count: 189,
       description: 'Milk, cheese, yogurt, butter',
       image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400',
       color: 'from-blue-600/80 to-blue-900/80'
@@ -322,7 +320,6 @@ const CompaniesPage = () => {
     {
       id: 'beverages',
       name: 'Beverages',
-      count: 312,
       description: 'Soft drinks, juices, water',
       image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400',
       color: 'from-cyan-600/80 to-cyan-900/80'
@@ -330,7 +327,6 @@ const CompaniesPage = () => {
     {
       id: 'snacks',
       name: 'Snacks & Chips',
-      count: 178,
       description: 'Chips, nuts, crackers',
       image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400',
       color: 'from-orange-600/80 to-orange-900/80'
@@ -338,7 +334,6 @@ const CompaniesPage = () => {
     {
       id: 'canned',
       name: 'Canned Foods',
-      count: 156,
       description: 'Canned vegetables, fruits, meat',
       image: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400',
       color: 'from-emerald-600/80 to-emerald-900/80'
@@ -346,7 +341,6 @@ const CompaniesPage = () => {
     {
       id: 'bakery',
       name: 'Bakery Products',
-      count: 134,
       description: 'Bread, cakes, pastries',
       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400',
       color: 'from-yellow-600/80 to-yellow-900/80'
@@ -354,7 +348,6 @@ const CompaniesPage = () => {
     {
       id: 'frozen',
       name: 'Frozen Foods',
-      count: 98,
       description: 'Frozen meals, vegetables, meat',
       image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400',
       color: 'from-sky-600/80 to-sky-900/80'
@@ -362,7 +355,6 @@ const CompaniesPage = () => {
     {
       id: 'sauces',
       name: 'Sauces & Condiments',
-      count: 167,
       description: 'Ketchup, mayonnaise, spices',
       image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=400',
       color: 'from-red-600/80 to-red-900/80'
@@ -370,7 +362,6 @@ const CompaniesPage = () => {
     {
       id: 'baby',
       name: 'Baby Food',
-      count: 67,
       description: 'Formula, purees, snacks',
       image: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400',
       color: 'from-pink-600/80 to-pink-900/80'
@@ -378,7 +369,6 @@ const CompaniesPage = () => {
     {
       id: 'cosmetics',
       name: 'Cosmetics & Personal Care',
-      count: 203,
       description: 'Skincare, haircare, beauty',
       image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400',
       color: 'from-purple-600/80 to-purple-900/80'
@@ -386,7 +376,6 @@ const CompaniesPage = () => {
     {
       id: 'detergents',
       name: 'Detergents & Household',
-      count: 145,
       description: 'Cleaning, laundry, household',
       image: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400',
       color: 'from-teal-600/80 to-teal-900/80'
@@ -394,7 +383,6 @@ const CompaniesPage = () => {
     {
       id: 'ingredients',
       name: 'Ingredients & Raw Materials',
-      count: 89,
       description: 'Sugar, flour, oils, spices',
       image: 'https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=400',
       color: 'from-lime-600/80 to-lime-900/80'
@@ -789,7 +777,7 @@ const CompaniesPage = () => {
                   color: '#94A3B8'
                 })
               }}>
-                24
+                {companies.length}
               </span>
             </button>
 
@@ -839,7 +827,7 @@ const CompaniesPage = () => {
                   color: '#EF4444'
                 })
               }}>
-                4
+                {liveCompanies.length}
               </span>
             </button>
 
@@ -883,7 +871,7 @@ const CompaniesPage = () => {
                   color: '#94A3B8'
                 })
               }}>
-                12
+                {shippingCompanies.length + threePLCompanies.length}
               </span>
             </button>
 
@@ -927,7 +915,7 @@ const CompaniesPage = () => {
                   color: '#94A3B8'
                 })
               }}>
-                16
+                {categoriesData.length}
               </span>
             </button>
 
@@ -1909,10 +1897,14 @@ const CompaniesPage = () => {
 
             {/* Categories Grid - 4 columns on desktop, 2 on tablet, 1 on mobile */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-              {categoriesData.map((category) => (
+              {categoriesData.map((category) => {
+                const realCount = companies.filter(
+                  c => c.categories?.includes(category.name)
+                ).length;
+                return (
                 <button
                   key={category.id}
-                  onClick={() => handleCategoryClick(category.name, category.count)}
+                  onClick={() => handleCategoryClick(category.name, realCount)}
                   className="group relative h-48 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0B5E75]/30 border-2 border-transparent hover:border-[#0B5E75]"
                 >
                   {/* Background Image */}
@@ -1934,7 +1926,7 @@ const CompaniesPage = () => {
                         <div className="flex items-center gap-2">
                           <Building2 className="w-4 h-4 text-slate-400" />
                           <span className="text-slate-300 text-sm font-medium">
-                            {category.count} companies
+                            {realCount > 0 ? `${realCount}+ suppliers` : 'Coming soon'}
                           </span>
                         </div>
                       </div>
@@ -1944,7 +1936,8 @@ const CompaniesPage = () => {
                     </div>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
 
             {/* Bottom CTA */}
