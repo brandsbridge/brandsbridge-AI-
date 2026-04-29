@@ -1,6 +1,14 @@
 // Mock Data for CMS-Ready Structure - DIGITAL FOOD EXPO
 // This structure supports Webflow CMS and future VR integration
 
+export interface CompanyReview {
+  buyerId: string;
+  rating: number;
+  comment?: string;
+  dealId?: string;
+  date: string;
+}
+
 export interface Company {
   id: string;
   slug: string;
@@ -71,6 +79,17 @@ export interface Company {
   status?: 'claimed' | 'unclaimed';
   profileViews?: number;
   pendingInquiries?: number;
+  // AI Reliability Engine inputs (Step 3)
+  // KYB & Compliance
+  kybStatus?: 'verified' | 'pending' | 'none';
+  documentsUploaded?: string[];
+  documentsRequired?: string[];
+  // Performance metrics
+  avgResponseTimeHours?: number;
+  completedDeals?: number;
+  joinedDate?: string;
+  // Reviews
+  reviews?: CompanyReview[];
 }
 
 export interface Product {
@@ -593,6 +612,18 @@ export const companies: Company[] = [
     activeCargo: { product: 'Premium Dates Mix', containerType: '40ft Dry', route: '→ Dubai/Jeddah', price: 24800 },
     status: 'claimed',
     profileViews: 342,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000', 'Halal'],
+    avgResponseTimeHours: 7,
+    completedDeals: 4,
+    joinedDate: '2025-08-20',
+    reviews: [
+      { buyerId: 'buyer_uae_almaya_062', rating: 4.4, comment: 'Quality consistent with specs, smooth communication.', date: '2025-09-12' },
+      { buyerId: 'buyer_qat_almeera_063', rating: 4.5, comment: 'Reliable supplier, on-time delivery.', date: '2025-11-04' },
+      { buyerId: 'buyer_kwt_sultan_064', rating: 4.6, comment: 'Professional team, clear contracts.', dealId: 'deal_2025_031', date: '2025-12-18' },
+      { buyerId: 'buyer_bhr_jawad_065', rating: 4.5, comment: 'Solid pricing, items as described.', date: '2026-02-02' },
+      { buyerId: 'buyer_omn_lulu_066', rating: 4.5, comment: 'Pleasant negotiation, fair payment terms.', date: '2026-04-08' },
+    ],
   },
   {
     id: '2', slug: 'baladna-food-industries', name: 'Baladna Food Industries',
@@ -623,6 +654,28 @@ export const companies: Company[] = [
     activeCargo: { product: 'UHT Milk 1L', containerType: '40ft Reefer', route: '→ UAE/Oman', price: 32000 },
     status: 'claimed',
     profileViews: 256,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'HACCP', 'Halal'],
+    avgResponseTimeHours: 8,
+    completedDeals: 22,
+    joinedDate: '2024-12-20',
+    reviews: [
+      { buyerId: 'buyer_uae_almaya_034', rating: 4.5, comment: 'Quality consistent with specs, smooth communication.', date: '2025-01-20' },
+      { buyerId: 'buyer_qat_almeera_035', rating: 4.6, comment: 'Reliable supplier, on-time delivery.', date: '2025-02-14' },
+      { buyerId: 'buyer_kwt_sultan_036', rating: 4.7, comment: 'Professional team, clear contracts.', dealId: 'deal_2025_007', date: '2025-03-08' },
+      { buyerId: 'buyer_uae_lulu_037', rating: 4.5, comment: 'Solid pricing, items as described.', date: '2025-04-22' },
+      { buyerId: 'buyer_bhr_jawad_038', rating: 4.6, comment: 'Responsive sales team and accurate documentation.', date: '2025-06-09' },
+      { buyerId: 'buyer_omn_carrefour_039', rating: 4.7, comment: 'Pleasant negotiation, fair payment terms.', date: '2025-07-15' },
+      { buyerId: 'buyer_qat_lulu_040', rating: 4.6, comment: 'Reasonable lead time, packaging held up well.', date: '2025-08-28' },
+      { buyerId: 'buyer_egy_metro_041', rating: 4.5, comment: 'Easy onboarding, paperwork was clean.', dealId: 'deal_2025_022', date: '2025-09-30' },
+      { buyerId: 'buyer_sau_panda_042', rating: 4.6, comment: 'Specs matched on first shipment, no rework needed.', date: '2025-11-04' },
+      { buyerId: 'buyer_uae_carrefour_043', rating: 4.7, comment: 'Communication consistent throughout the deal.', date: '2025-12-12' },
+      { buyerId: 'buyer_kwt_alothaim_044', rating: 4.6, comment: 'Quotes turned around quickly, samples on point.', date: '2026-01-15' },
+      { buyerId: 'buyer_qat_almeera_045', rating: 4.5, comment: 'Good response on quotes, samples met expectations.', date: '2026-02-08' },
+      { buyerId: 'buyer_omn_lulu_046', rating: 4.7, comment: 'Quality consistent with specs, smooth communication.', dealId: 'deal_2026_002', date: '2026-03-02' },
+      { buyerId: 'buyer_uae_almaya_047', rating: 4.5, comment: 'Reliable supplier, on-time delivery.', date: '2026-03-25' },
+      { buyerId: 'buyer_kwt_sultan_048', rating: 4.7, comment: 'Professional team, clear contracts.', date: '2026-04-15' },
+    ],
   },
   {
     id: '3', slug: 'qatar-national-import-export', name: 'Qatar National Import & Export',
@@ -642,6 +695,15 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT', 'EXW'], shippingPorts: ['Doha', 'Hamad Port'],
     status: 'claimed',
     profileViews: 189,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'HACCP'],
+    avgResponseTimeHours: 10,
+    completedDeals: 5,
+    joinedDate: '2025-11-25',
+    reviews: [
+      { buyerId: 'buyer_uae_almaya_084', rating: 4.3, comment: 'Quality consistent with specs, smooth communication.', date: '2026-01-15' },
+      { buyerId: 'buyer_sau_panda_085', rating: 4.5, comment: 'Solid pricing, items as described.', date: '2026-03-28' },
+    ],
   },
   // ============================================
   // SAUDI ARABIA COMPANIES
@@ -664,6 +726,21 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Jeddah', 'Dammam', 'Riyadh'],
     status: 'claimed',
     profileViews: 478,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000', 'HACCP', 'Halal'],
+    avgResponseTimeHours: 3,
+    completedDeals: 18,
+    joinedDate: '2024-09-15',
+    reviews: [
+      { buyerId: 'buyer_uae_almaya_001', rating: 4.5, comment: 'Quality consistent with specs, smooth communication.', date: '2024-11-08' },
+      { buyerId: 'buyer_qat_almeera_002', rating: 4.7, comment: 'Reliable supplier, on-time delivery.', dealId: 'deal_2025_017', date: '2025-02-14' },
+      { buyerId: 'buyer_kwt_sultan_003', rating: 4.8, comment: 'Professional team, clear contracts.', date: '2025-05-21' },
+      { buyerId: 'buyer_uae_carrefour_004', rating: 4.7, comment: 'Solid pricing, items as described.', dealId: 'deal_2025_034', date: '2025-08-03' },
+      { buyerId: 'buyer_bhr_lulu_005', rating: 4.8, comment: 'Responsive sales team and accurate documentation.', date: '2025-10-19' },
+      { buyerId: 'buyer_omn_lulu_006', rating: 4.7, comment: 'Specs matched on first shipment, no rework needed.', date: '2025-12-11' },
+      { buyerId: 'buyer_egy_metro_007', rating: 4.6, comment: 'Pleasant negotiation, fair payment terms.', date: '2026-02-08' },
+      { buyerId: 'buyer_sau_panda_008', rating: 4.8, comment: 'Easy onboarding, paperwork was clean.', dealId: 'deal_2026_009', date: '2026-04-12' },
+    ],
   },
   {
     id: '5', slug: 'savola-group', name: 'Savola Group',
@@ -683,6 +760,25 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jeddah', 'Dammam'],
     status: 'claimed',
     profileViews: 312,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000', 'HACCP', 'Halal'],
+    avgResponseTimeHours: 7,
+    completedDeals: 28,
+    joinedDate: '2024-08-10',
+    reviews: [
+      { buyerId: 'buyer_uae_almaya_010', rating: 4.6, comment: 'Quality consistent with specs, smooth communication.', date: '2024-10-05' },
+      { buyerId: 'buyer_qat_almeera_011', rating: 4.7, comment: 'Reliable supplier, on-time delivery.', date: '2024-12-20' },
+      { buyerId: 'buyer_kwt_sultan_012', rating: 4.8, comment: 'Professional team, clear contracts.', dealId: 'deal_2025_002', date: '2025-02-08' },
+      { buyerId: 'buyer_uae_lulu_013', rating: 4.7, comment: 'Specs matched on first shipment, no rework needed.', date: '2025-04-15' },
+      { buyerId: 'buyer_omn_carrefour_014', rating: 4.8, comment: 'Solid pricing, items as described.', date: '2025-06-02' },
+      { buyerId: 'buyer_bhr_jawad_015', rating: 4.6, comment: 'Responsive sales team and accurate documentation.', dealId: 'deal_2025_019', date: '2025-07-22' },
+      { buyerId: 'buyer_qat_lulu_016', rating: 4.7, comment: 'Pleasant negotiation, fair payment terms.', date: '2025-09-09' },
+      { buyerId: 'buyer_egy_metro_017', rating: 4.8, comment: 'Easy onboarding, paperwork was clean.', date: '2025-10-25' },
+      { buyerId: 'buyer_sau_panda_018', rating: 4.7, comment: 'Reasonable lead time, packaging held up well.', date: '2025-12-04' },
+      { buyerId: 'buyer_uae_carrefour_019', rating: 4.6, comment: 'Communication consistent throughout the deal.', date: '2026-01-18' },
+      { buyerId: 'buyer_kwt_alothaim_020', rating: 4.7, comment: 'Quotes turned around quickly, samples on point.', dealId: 'deal_2026_004', date: '2026-03-05' },
+      { buyerId: 'buyer_qat_almeera_021', rating: 4.7, comment: 'Good response on quotes, samples met expectations.', date: '2026-04-08' },
+    ],
   },
   // ============================================
   // UAE COMPANIES
@@ -705,6 +801,24 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jebel Ali', 'Abu Dhabi'],
     status: 'claimed',
     profileViews: 267,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000', 'Halal'],
+    avgResponseTimeHours: 6,
+    completedDeals: 14,
+    joinedDate: '2025-02-15',
+    reviews: [
+      { buyerId: 'buyer_qat_almeera_050', rating: 4.3, comment: 'Quality consistent with specs, smooth communication.', date: '2025-03-15' },
+      { buyerId: 'buyer_kwt_sultan_051', rating: 4.4, comment: 'Reliable supplier, on-time delivery.', date: '2025-04-22' },
+      { buyerId: 'buyer_uae_lulu_052', rating: 4.5, comment: 'Solid pricing, items as described.', dealId: 'deal_2025_014', date: '2025-05-30' },
+      { buyerId: 'buyer_bhr_jawad_053', rating: 4.4, comment: 'Professional team, clear contracts.', date: '2025-07-08' },
+      { buyerId: 'buyer_omn_lulu_054', rating: 4.3, comment: 'Pleasant negotiation, fair payment terms.', date: '2025-08-19' },
+      { buyerId: 'buyer_qat_lulu_055', rating: 4.5, comment: 'Reasonable lead time, packaging held up well.', date: '2025-10-02' },
+      { buyerId: 'buyer_egy_metro_056', rating: 4.4, comment: 'Easy onboarding, paperwork was clean.', date: '2025-11-15' },
+      { buyerId: 'buyer_sau_panda_057', rating: 4.3, comment: 'Specs matched on first shipment, no rework needed.', date: '2025-12-22' },
+      { buyerId: 'buyer_uae_carrefour_058', rating: 4.5, comment: 'Communication consistent throughout the deal.', dealId: 'deal_2026_001', date: '2026-02-04' },
+      { buyerId: 'buyer_kwt_alothaim_059', rating: 4.4, comment: 'Quotes turned around quickly, samples on point.', date: '2026-03-10' },
+      { buyerId: 'buyer_qat_almeera_060', rating: 4.4, comment: 'Good response on quotes, samples met expectations.', date: '2026-04-12' },
+    ],
   },
   {
     id: '7', slug: 'national-food-industries', name: 'National Food Industries',
@@ -724,6 +838,17 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Jebel Ali'],
     status: 'claimed',
     profileViews: 198,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'HACCP'],
+    avgResponseTimeHours: 6,
+    completedDeals: 10,
+    joinedDate: '2025-07-25',
+    reviews: [
+      { buyerId: 'buyer_uae_lulu_068', rating: 4.5, comment: 'Quality consistent with specs, smooth communication.', date: '2025-09-20' },
+      { buyerId: 'buyer_qat_lulu_069', rating: 4.6, comment: 'Reliable supplier, on-time delivery.', dealId: 'deal_2025_026', date: '2025-11-12' },
+      { buyerId: 'buyer_kwt_sultan_070', rating: 4.7, comment: 'Solid pricing, items as described.', date: '2026-01-25' },
+      { buyerId: 'buyer_egy_metro_071', rating: 4.6, comment: 'Communication consistent throughout the deal.', date: '2026-03-30' },
+    ],
   },
   {
     id: '8', slug: 'americana-foods', name: 'Americana Foods',
@@ -743,6 +868,23 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 50% advance'], shippingPorts: ['Jebel Ali', 'Abu Dhabi'],
     status: 'claimed',
     profileViews: 145,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000', 'Halal'],
+    avgResponseTimeHours: 4,
+    completedDeals: 35,
+    joinedDate: '2024-10-05',
+    reviews: [
+      { buyerId: 'buyer_qat_almeera_023', rating: 4.4, comment: 'Quality consistent with specs, smooth communication.', date: '2024-11-22' },
+      { buyerId: 'buyer_kwt_sultan_024', rating: 4.5, comment: 'Reliable supplier, on-time delivery.', date: '2025-01-30' },
+      { buyerId: 'buyer_uae_lulu_025', rating: 4.6, comment: 'Solid pricing, items as described.', dealId: 'deal_2025_011', date: '2025-04-08' },
+      { buyerId: 'buyer_bhr_jawad_026', rating: 4.5, comment: 'Professional team, clear contracts.', date: '2025-06-15' },
+      { buyerId: 'buyer_omn_lulu_027', rating: 4.4, comment: 'Pleasant negotiation, fair payment terms.', date: '2025-08-20' },
+      { buyerId: 'buyer_qat_lulu_028', rating: 4.5, comment: 'Reasonable lead time, packaging held up well.', date: '2025-10-04' },
+      { buyerId: 'buyer_egy_metro_029', rating: 4.6, comment: 'Easy onboarding, paperwork was clean.', dealId: 'deal_2025_028', date: '2025-11-18' },
+      { buyerId: 'buyer_sau_panda_030', rating: 4.5, comment: 'Specs matched on first shipment, no rework needed.', date: '2026-01-12' },
+      { buyerId: 'buyer_uae_carrefour_031', rating: 4.5, comment: 'Communication consistent throughout the deal.', date: '2026-02-25' },
+      { buyerId: 'buyer_kwt_alothaim_032', rating: 4.5, comment: 'Quotes turned around quickly, samples on point.', date: '2026-04-03' },
+    ],
   },
   // ============================================
   // KUWAIT COMPANIES
@@ -765,6 +907,19 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Shuwaikh', 'Doha Port'],
     status: 'claimed',
     profileViews: 223,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'Halal'],
+    avgResponseTimeHours: 7,
+    completedDeals: 12,
+    joinedDate: '2025-11-15',
+    reviews: [
+      { buyerId: 'buyer_uae_lulu_073', rating: 4.4, comment: 'Quality consistent with specs, smooth communication.', date: '2026-01-08' },
+      { buyerId: 'buyer_qat_almeera_074', rating: 4.5, comment: 'Reliable supplier, on-time delivery.', date: '2026-01-30' },
+      { buyerId: 'buyer_sau_panda_075', rating: 4.6, comment: 'Solid pricing, items as described.', dealId: 'deal_2026_007', date: '2026-02-18' },
+      { buyerId: 'buyer_bhr_jawad_076', rating: 4.5, comment: 'Professional team, clear contracts.', date: '2026-03-05' },
+      { buyerId: 'buyer_kwt_sultan_077', rating: 4.4, comment: 'Pleasant negotiation, fair payment terms.', date: '2026-03-22' },
+      { buyerId: 'buyer_uae_carrefour_078', rating: 4.6, comment: 'Communication consistent throughout the deal.', date: '2026-04-15' },
+    ],
   },
   // ============================================
   // OMAN COMPANIES
@@ -787,6 +942,16 @@ export const companies: Company[] = [
     paymentTerms: ['LC at Sight', 'TT 30% advance'], shippingPorts: ['Sohar', 'Muscat'],
     status: 'claimed',
     profileViews: 167,
+    kybStatus: 'verified',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000'],
+    avgResponseTimeHours: 9,
+    completedDeals: 4,
+    joinedDate: '2025-09-10',
+    reviews: [
+      { buyerId: 'buyer_uae_lulu_080', rating: 4.2, comment: 'Quality consistent with specs, smooth communication.', date: '2025-10-15' },
+      { buyerId: 'buyer_qat_lulu_081', rating: 4.3, comment: 'Reliable supplier, on-time delivery.', dealId: 'deal_2025_038', date: '2026-01-22' },
+      { buyerId: 'buyer_kwt_sultan_082', rating: 4.4, comment: 'Reasonable lead time, packaging held up well.', date: '2026-04-02' },
+    ],
   },
   // ============================================
   // UNCLAIMED COMPANIES (Not yet claimed by owners)
@@ -808,6 +973,12 @@ export const companies: Company[] = [
     status: 'unclaimed',
     profileViews: 234,
     pendingInquiries: 8,
+    kybStatus: 'pending',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000', 'Halal'],
+    avgResponseTimeHours: 8,
+    completedDeals: 10,
+    joinedDate: '2025-07-10',
+    reviews: [],
   },
   {
     id: '12', slug: 'gulf-sweets-factory', name: 'Gulf Sweets Factory',
@@ -826,6 +997,12 @@ export const companies: Company[] = [
     status: 'unclaimed',
     profileViews: 156,
     pendingInquiries: 3,
+    kybStatus: 'pending',
+    documentsUploaded: ['CR', 'Tax', 'HACCP', 'Halal'],
+    avgResponseTimeHours: 10,
+    completedDeals: 8,
+    joinedDate: '2025-12-15',
+    reviews: [],
   },
   {
     id: '13', slug: 'doha-dairy-products', name: 'Doha Dairy Products',
@@ -844,6 +1021,12 @@ export const companies: Company[] = [
     status: 'unclaimed',
     profileViews: 89,
     pendingInquiries: 5,
+    kybStatus: 'pending',
+    documentsUploaded: ['CR', 'Tax', 'Halal'],
+    avgResponseTimeHours: 9,
+    completedDeals: 7,
+    joinedDate: '2025-09-20',
+    reviews: [],
   },
   {
     id: '14', slug: 'emirates-natural-foods', name: 'Emirates Natural Foods',
@@ -862,6 +1045,12 @@ export const companies: Company[] = [
     status: 'unclaimed',
     profileViews: 312,
     pendingInquiries: 12,
+    kybStatus: 'pending',
+    documentsUploaded: ['CR', 'Tax', 'HACCP'],
+    avgResponseTimeHours: 11,
+    completedDeals: 6,
+    joinedDate: '2025-12-25',
+    reviews: [],
   },
   {
     id: '15', slug: 'riyadh-food-industries', name: 'Riyadh Food Industries',
@@ -880,6 +1069,12 @@ export const companies: Company[] = [
     status: 'unclaimed',
     profileViews: 445,
     pendingInquiries: 19,
+    kybStatus: 'pending',
+    documentsUploaded: ['CR', 'Tax', 'ISO22000'],
+    avgResponseTimeHours: 10,
+    completedDeals: 5,
+    joinedDate: '2025-07-30',
+    reviews: [],
   }
 ];
 
