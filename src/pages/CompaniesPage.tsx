@@ -62,16 +62,6 @@ const CompaniesPage = () => {
     setShowVirtualBooth(true);
   };
 
-  // Live session timer
-  const [liveTime, setLiveTime] = useState(4525); // 01:15:25 in seconds
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveTime(prev => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   const formatLiveTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -510,7 +500,7 @@ const CompaniesPage = () => {
 
       setSearchResults(results);
       setIsSearching(false);
-    }, 1200); // 1.2 second AI "thinking" delay
+    }, 300); // brief delay so the skeleton is visible
   };
 
   // Clear Search
@@ -806,28 +796,20 @@ const CompaniesPage = () => {
                 })
               }}
             >
-              <span className="relative flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
-              </span>
-              Live Now
-              <span style={{
-                padding: '2px 8px',
-                borderRadius: '100px',
-                fontSize: '12px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                ...(activeTab === 'live' ? {
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white'
-                } : {
-                  background: 'rgba(239,68,68,0.2)',
-                  color: '#EF4444'
-                })
-              }}>
-                {liveCompanies.length}
+              <Video className="w-4 h-4" />
+              Live
+              <span
+                className="uppercase tracking-wide"
+                style={{
+                  padding: '2px 6px',
+                  borderRadius: '100px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  background: 'rgba(212, 175, 55, 0.2)',
+                  color: '#D4AF37'
+                }}
+              >
+                Soon
               </span>
             </button>
 
@@ -1429,142 +1411,69 @@ const CompaniesPage = () => {
           </div>
         )}
 
-        {/* ========== TAB 2: LIVE NOW ========== */}
+        {/* ========== TAB 2: LIVE — COMING SOON ========== */}
         {activeTab === 'live' && (
-          <div>
-            {/* Top Banner */}
-            <div className="bg-gradient-to-r from-red-500/20 to-red-600/10 border border-red-500/30 rounded-2xl p-6 mb-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-transparent"></div>
-              <div className="relative flex items-center gap-4">
-                <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center">
-                  <span className="relative flex h-5 w-5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500"></span>
-                  </span>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">
-                    4 Companies Broadcasting Live Right Now
-                  </h2>
-                  <p className="text-slate-400">
-                    Join their session and negotiate directly with their export team
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Companies Grid */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {liveCompanies.map((company) => (
-                <div
-                  key={company.id}
-                  className="bg-[#111827] border border-red-500/30 rounded-2xl overflow-hidden hover:border-red-500/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/10"
-                >
-                  {/* Live Header */}
-                  <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-500/20 to-transparent border-b border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                      </span>
-                      <span className="text-red-400 font-semibold text-sm">LIVE</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-slate-400 text-sm font-mono">{formatLiveTime(company.time)}</span>
-                      <span className="text-slate-400 text-sm">{company.waiting} waiting</span>
-                    </div>
-                  </div>
-
-                  {/* Company Info */}
-                  <div className="p-5">
-                    <div className="flex items-start gap-4 mb-4">
-                      <img
-                        src={company.logo}
-                        alt={company.name}
-                        className="w-14 h-14 rounded-xl object-cover bg-white"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-lg font-bold text-white">{company.name}</h3>
-                          <span>{company.flag}</span>
-                        </div>
-                        <p className="text-slate-400 text-sm">{company.category}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <BadgeCheck className="w-4 h-4 text-emerald-400" />
-                          <span className="text-emerald-400 text-xs">KYB Verified</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                        <Users className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-                        <div className="text-white font-bold">{company.waiting}</div>
-                        <div className="text-slate-500 text-xs">buyers waiting</div>
-                      </div>
-                      <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                        <DollarSign className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-                        <div className="text-white font-bold text-sm">{company.revenue}</div>
-                        <div className="text-slate-500 text-xs">revenue</div>
-                      </div>
-                      <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                        <CheckCircle2 className="w-4 h-4 text-amber-400 mx-auto mb-1" />
-                        <div className="text-white font-bold">{company.deals}</div>
-                        <div className="text-slate-500 text-xs">deals today</div>
-                      </div>
-                    </div>
-
-                    {/* Products */}
-                    <div className="mb-4">
-                      <div className="text-slate-400 text-xs font-medium mb-2">Selling today:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {company.products.map((product, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-slate-700/50 rounded text-xs text-slate-300">
-                            {product}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* AI Match */}
-                    <div className="bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg p-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Target className="w-4 h-4 text-[#D4AF37]" />
-                        <span className="text-white text-sm font-medium">AI Match Score for you:</span>
-                        <span className="text-[#D4AF37] font-bold">{company.matchScore}%</span>
-                        <span className="text-lg">🎯</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-3">
-                      <button className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-400 hover:to-red-500 transition-all flex items-center justify-center gap-2">
-                        <Radio className="w-4 h-4" />
-                        Join Queue Now
-                      </button>
-                      <button className="px-4 py-3 bg-transparent border border-slate-600 text-slate-300 rounded-xl font-medium hover:bg-slate-700/50 transition-all flex items-center gap-2">
-                        <Eye className="w-4 h-4" />
-                        View Profile
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom CTA */}
-            <div className="mt-8 text-center bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
-              <p className="text-slate-400 mb-4">
-                Want to broadcast live? Upgrade to Growth or Enterprise plan
-              </p>
-              <button
-                onClick={() => navigate('/pricing')}
-                className="px-6 py-3 bg-gradient-to-r from-[#0B5E75] to-[#0B5E75]/80 text-white rounded-xl font-semibold hover:shadow-lg transition-all inline-flex items-center gap-2"
+          <div className="min-h-[600px] flex items-center justify-center py-8">
+            <div
+              className="w-full max-w-2xl mx-auto rounded-3xl p-10 sm:p-12 text-center"
+              style={{
+                background: 'linear-gradient(135deg, #071120 0%, #0C1829 100%)',
+                border: '1px solid #162438'
+              }}
+            >
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                style={{
+                  background: 'rgba(212, 175, 55, 0.15)',
+                  border: '1px solid rgba(212, 175, 55, 0.3)'
+                }}
               >
-                <Radio className="w-4 h-4" />
-                Start Broadcasting →
-              </button>
+                <Video className="w-10 h-10" style={{ color: '#D4AF37' }} />
+              </div>
+
+              <h2 className="text-3xl font-bold text-white mb-3">Live Deal Rooms</h2>
+              <p className="text-slate-400 text-lg mb-8 max-w-md mx-auto">
+                Real-time video meetings between buyers and suppliers worldwide.
+              </p>
+
+              <div
+                className="rounded-2xl p-6 mb-8 text-left"
+                style={{
+                  background: 'rgba(14, 165, 201, 0.05)',
+                  border: '1px solid rgba(14, 165, 201, 0.2)'
+                }}
+              >
+                <ul className="space-y-3">
+                  {[
+                    '8-Language Translation',
+                    'HD Video & Crystal Audio',
+                    'Built on Agora.io',
+                    'Recorded for review',
+                    'Calendar Integration',
+                    'Document sharing in-call'
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: '#0EA5C9' }} />
+                      <span className="text-slate-200">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex items-center gap-3 justify-center mb-6">
+                <div className="h-px flex-1 max-w-[80px]" style={{ background: '#162438' }} />
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                  style={{ background: '#D4AF37', color: '#050D1A' }}
+                >
+                  Coming Soon
+                </span>
+                <div className="h-px flex-1 max-w-[80px]" style={{ background: '#162438' }} />
+              </div>
+
+              <p className="text-slate-500 text-sm">
+                Part of the Brands Bridge roadmap.
+              </p>
             </div>
           </div>
         )}
