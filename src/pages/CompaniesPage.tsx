@@ -39,9 +39,11 @@ import {
   BarChart3,
   Warehouse,
   Lock,
-  CreditCard
+  CreditCard,
+  HelpCircle
 } from 'lucide-react';
 import { companies, categories, countries, Company, threePLCompanies, cargoAuctions } from '../data/mockData';
+import { calculateAIReliability, getRatingDisplay } from '../lib/companyMetrics';
 import VirtualBoothModal from '../components/VirtualBoothModal';
 
 type TabType = 'suppliers' | 'live' | 'shipping' | 'cargo' | 'categories';
@@ -2137,6 +2139,12 @@ const BridgeCard = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+  const reliability = calculateAIReliability(company);
+  const rating = getRatingDisplay(company);
+  const hasMonthlyContainers = typeof company.monthlyContainers === 'number';
+  const hasMinOrderValue = typeof company.minOrderValue === 'string' && company.minOrderValue.length > 0;
+  const hasPaymentTerms = Array.isArray(company.paymentTerms) && company.paymentTerms.length > 0;
+  const hasAnyQuickStat = hasMonthlyContainers || hasMinOrderValue || hasPaymentTerms;
 
   return (
     <div
@@ -2186,19 +2194,37 @@ const BridgeCard = ({
                 }`}>
                   {company.businessType}
                 </span>
-                <span className="flex items-center gap-1 px-2 py-1 bg-slate-700/50 rounded-lg text-xs text-slate-400">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  4.8 (125 reviews)
-                </span>
+                {rating.hasReviews ? (
+                  <span className="flex items-center gap-1 px-2 py-1 bg-slate-700/50 rounded-lg text-xs text-slate-400">
+                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                    {rating.display}
+                  </span>
+                ) : (
+                  <span
+                    className="px-2 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider"
+                    style={{
+                      background: 'rgba(14,165,201,0.15)',
+                      color: '#0EA5C9',
+                      border: '1px solid rgba(14,165,201,0.3)',
+                    }}
+                  >
+                    New listing
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           {/* AI Reliability Score */}
           <div className="text-right">
-            <div className="text-xs text-slate-400 mb-1">AI Reliability</div>
-            <div className="text-3xl font-bold text-emerald-400">97%</div>
-            <div className="text-xs text-slate-500">On-Time Delivery</div>
+            <div className="text-xs text-slate-400 mb-1 flex items-center justify-end gap-1">
+              AI Reliability
+              <span title="Calculated from KYB verification, document compliance, response time, completed deals, platform tenure, and customer reviews.">
+                <HelpCircle className="w-3 h-3 inline opacity-60" />
+              </span>
+            </div>
+            <div className="text-3xl font-bold text-emerald-400">{reliability}%</div>
+            <div className="text-xs text-slate-500">Composite trust score</div>
           </div>
         </div>
 
@@ -2323,17 +2349,27 @@ const BridgeCard = ({
 
         {/* Quick stats */}
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-700/50 text-sm">
-          <div className="flex items-center gap-4">
-            <div className="text-slate-400">
-              <span className="text-white font-medium">50+</span> containers/month
+          {hasAnyQuickStat ? (
+            <div className="flex items-center gap-4 flex-wrap">
+              {hasMonthlyContainers && (
+                <div className="text-slate-400">
+                  <span className="text-white font-medium">{company.monthlyContainers}</span> containers/month
+                </div>
+              )}
+              {hasMinOrderValue && (
+                <div className="text-slate-400">
+                  <span className="text-white font-medium">{company.minOrderValue}</span> min order
+                </div>
+              )}
+              {hasPaymentTerms && (
+                <div className="text-slate-400">
+                  <span className="text-white font-medium">{company.paymentTerms!.join(', ')}</span>
+                </div>
+              )}
             </div>
-            <div className="text-slate-400">
-              <span className="text-white font-medium">$5K</span> min order
-            </div>
-            <div className="text-slate-400">
-              <span className="text-white font-medium">FOB/CIF</span> terms
-            </div>
-          </div>
+          ) : (
+            <div />
+          )}
           <Link
             to={`/companies/${company.slug}`}
             className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-medium transition-colors"

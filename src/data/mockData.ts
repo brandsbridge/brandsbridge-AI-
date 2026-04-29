@@ -56,8 +56,6 @@ export interface Company {
   products?: Product[];
   milestones?: { year: string; event: string }[];
   isLive?: boolean;
-  rating?: number;
-  reviewCount?: number;
   exportCount?: number;
   monthlyContainers?: number;
   contactPerson?: {
@@ -604,8 +602,6 @@ export const companies: Company[] = [
       { year: '2024', event: 'Joined Brands Bridge AI' },
     ],
     isLive: true,
-    rating: 4.8,
-    reviewCount: 156,
     exportCount: 45,
     monthlyContainers: 25,
     contactPerson: { name: 'Mohammed Al Kuwari', title: 'Export Manager', languages: ['🇬🇧 EN', '🇸🇦 AR'] },
@@ -649,7 +645,7 @@ export const companies: Company[] = [
       { id: '3', name: 'Yogurt - 1kg Tub', image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400', priceRange: '$4.50 - $5.20', unit: 'per case (6 units)', moq: '100 cases', leadTime: '7-14 days', certifications: ['Halal', 'ISO 22000'] },
     ],
     milestones: [{ year: '2017', event: 'Founded post-blockade' }, { year: '2019', event: '10,000 cows reached' }, { year: '2024', event: 'Joined Brands Bridge AI' }],
-    isLive: false, rating: 4.6, reviewCount: 89,
+    isLive: false,
     contactPerson: { name: 'Khalid Al Romaihi', title: 'Export Manager', languages: ['🇬🇧 EN', '🇸🇦 AR'] },
     activeCargo: { product: 'UHT Milk 1L', containerType: '40ft Reefer', route: '→ UAE/Oman', price: 32000 },
     status: 'claimed',

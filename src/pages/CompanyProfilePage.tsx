@@ -24,14 +24,51 @@ import {
   Send,
   X,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  HelpCircle,
+  Award
 } from 'lucide-react';
 import { companies, Company } from '../data/mockData';
+import { calculateAIReliability, getReliabilityBreakdown, getRatingDisplay, type ReliabilityFactors } from '../lib/companyMetrics';
 import MeetingRequestModal from '../components/MeetingRequestModal';
 import EmailInquiryModal from '../components/EmailInquiryModal';
 import BackButton from '../components/BackButton';
 import Breadcrumb from '../components/Breadcrumb';
 import VirtualBoothModal from '../components/VirtualBoothModal';
+
+const reliabilityBarColor = (score: number): string => {
+  if (score >= 80) return '#10B981';
+  if (score >= 60) return '#D4AF37';
+  return '#DC2626';
+};
+
+const BreakdownBar = ({ label, score }: { label: string; score: number }) => {
+  const color = reliabilityBarColor(score);
+  const width = Math.max(0, Math.min(100, score));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-slate-300">{label}</span>
+        <span className="font-semibold" style={{ color }}>{Math.round(score)}%</span>
+      </div>
+      <div className="w-full h-2 rounded-full bg-slate-700/50 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${width}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const BREAKDOWN_FACTORS: Array<{ key: keyof ReliabilityFactors; label: string }> = [
+  { key: 'kyb', label: 'KYB Verification' },
+  { key: 'documents', label: 'Document Compliance' },
+  { key: 'responseTime', label: 'Response Time' },
+  { key: 'completedDeals', label: 'Completed Deals' },
+  { key: 'tenure', label: 'Platform Tenure' },
+  { key: 'reviews', label: 'Customer Reviews' },
+];
 
 const CompanyProfilePage = () => {
   const { slug } = useParams();
@@ -64,6 +101,10 @@ const CompanyProfilePage = () => {
       </div>
     );
   }
+
+  const reliability = calculateAIReliability(company);
+  const breakdown = getReliabilityBreakdown(company);
+  const rating = getRatingDisplay(company);
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #050D1A 0%, #071120 100%)' }}>
@@ -134,11 +175,23 @@ const CompanyProfilePage = () => {
                   }`}>
                     {company.businessType}
                   </span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                    <span className="text-white font-medium">4.8</span>
-                    <span className="text-slate-500">(125 reviews)</span>
-                  </div>
+                  {rating.hasReviews ? (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                      <span className="text-white font-medium">{rating.display}</span>
+                    </div>
+                  ) : (
+                    <span
+                      className="px-2 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider"
+                      style={{
+                        background: 'rgba(14,165,201,0.15)',
+                        color: '#0EA5C9',
+                        border: '1px solid rgba(14,165,201,0.3)',
+                      }}
+                    >
+                      New listing
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {company.categories.map((cat, idx) => (
@@ -153,10 +206,15 @@ const CompanyProfilePage = () => {
             {/* AI Reliability Score */}
             <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-2xl p-4 lg:min-w-[200px]">
               <div className="text-center">
-                <div className="text-4xl font-bold text-emerald-400 mb-1">97%</div>
-                <div className="text-xs text-emerald-400/70 mb-3">AI Reliability Score</div>
+                <div className="text-4xl font-bold text-emerald-400 mb-1">{reliability}%</div>
+                <div className="text-xs text-emerald-400/70 mb-3 flex items-center justify-center gap-1">
+                  AI Reliability Score
+                  <span title="Calculated from KYB verification, document compliance, response time, completed deals, platform tenure, and customer reviews.">
+                    <HelpCircle className="w-3 h-3 inline opacity-60" />
+                  </span>
+                </div>
                 <div className="w-full bg-slate-700/50 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full" style={{ width: '97%' }} />
+                  <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full" style={{ width: `${reliability}%` }} />
                 </div>
               </div>
             </div>
@@ -356,6 +414,36 @@ const CompanyProfilePage = () => {
                 About Company
               </h2>
               <p className="text-slate-300 leading-relaxed">{company.description}</p>
+            </section>
+
+            {/* Reliability Score Breakdown */}
+            <section className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
+              <div className="flex items-start justify-between mb-5 gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <Award className="w-5 h-5 text-emerald-400" />
+                    Reliability Score Breakdown
+                    <span title="Calculated from KYB verification, document compliance, response time, completed deals, platform tenure, and customer reviews.">
+                      <HelpCircle className="w-4 h-4 inline text-slate-500" />
+                    </span>
+                  </h2>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Composite trust score derived from 6 weighted signals.
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-3xl font-bold text-emerald-400">{reliability}%</div>
+                  <div className="text-xs text-slate-500">Composite</div>
+                </div>
+              </div>
+              <div className="space-y-3.5">
+                {BREAKDOWN_FACTORS.map((f) => (
+                  <BreakdownBar key={f.key} label={f.label} score={breakdown[f.key]} />
+                ))}
+              </div>
+              <div className="mt-5 pt-4 border-t border-slate-700/50 text-xs text-slate-500 leading-relaxed">
+                Weighted formula: KYB 25% · Documents 20% · Response 15% · Deals 15% · Tenure 15% · Reviews 10%.
+              </div>
             </section>
 
             {/* Gallery Section */}

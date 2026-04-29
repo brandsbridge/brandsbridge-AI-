@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, ArrowLeft, MapPin, Calendar, Users, Globe, Package, Play, Factory, Grid3X3, Map, Star, CheckCircle, Phone, Mail, MessageCircle, Video, ExternalLink, Share2, Heart, Download, Clock, ChevronRight, Compass } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Company } from '../data/mockData';
+import { getRatingDisplay } from '../lib/companyMetrics';
 
 interface VirtualBoothModalProps {
   company: Company;
@@ -478,11 +479,14 @@ const VirtualBoothModal = ({ company, onClose }: VirtualBoothModalProps) => {
                   <CheckCircle className="w-4 h-4" /> {cert}
                 </div>
               ))}
-              {company.rating && (
-                <div className="flex items-center gap-2 text-amber-400 text-sm">
-                  <Star className="w-4 h-4 fill-current" /> {company.rating}/5 ({company.reviewCount} reviews)
-                </div>
-              )}
+              {(() => {
+                const rating = getRatingDisplay(company);
+                return rating.hasReviews ? (
+                  <div className="flex items-center gap-2 text-amber-400 text-sm">
+                    <Star className="w-4 h-4 fill-current" /> {rating.display}
+                  </div>
+                ) : null;
+              })()}
               <div className="flex items-center gap-2 text-blue-400 text-sm">
                 <Package className="w-4 h-4" /> {company.exportCount || 50}+ successful exports
               </div>
