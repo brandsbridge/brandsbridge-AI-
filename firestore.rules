@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // inquiries: AI-drafted buyer→supplier messages.
+    //
+    // Read: only the buyer who created the inquiry, OR the supplier
+    //   user account that received it. supplierUid is set when the
+    //   supplier has claimed their profile and links a real Auth UID.
+    //   Until then, only the buyer can read.
+    //
+    // Write: blocked from clients. All writes go through Cloud
+    //   Functions using the Admin SDK (which bypasses rules).
+    match /inquiries/{inquiryId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.buyerId ||
+        request.auth.uid == resource.data.supplierUid
+      );
+      allow create, update, delete: if false;
+    }
+
+    // Default deny — every other collection requires an explicit rule.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
