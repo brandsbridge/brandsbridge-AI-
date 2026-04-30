@@ -568,6 +568,24 @@ export const companies: Company[] = [
   // QATAR COMPANIES
   // ============================================
   {
+    id: 'bbt', slug: 'brands-bridge-trading', name: 'Brands Bridge Trading W.L.L.',
+    logo: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=200',
+    description: 'Qatar-based importer and distributor of premium FMCG products. Specializing in sweets, beverages, coffee, groceries, cosmetics, and non-food items across the GCC market.',
+    country: 'Qatar', countryFlag: '🇶🇦', city: 'Doha', businessType: 'Importer',
+    categories: ['Sweets & Confectionery', 'Beverages', 'Coffee & Tea', 'Groceries', 'Cosmetics & Beauty', 'Non-Food'],
+    exportCountries: ['UAE', 'Saudi Arabia', 'Kuwait', 'Bahrain', 'Oman'],
+    yearEstablished: 2024, employees: '10-50',
+    certifications: ['Halal', 'ISO 22000'],
+    website: 'https://brandsbridgetrading.com',
+    whatsapp: '',
+    email: 'info@brandsbridgetrading.com',
+    exportManager: { name: '', email: 'info@brandsbridgetrading.com', whatsapp: '' },
+    salesManager:  { name: '', email: 'info@brandsbridgetrading.com' },
+    gallery: ['https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600'],
+    featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2026-05-01',
+    boothNumber: 'BBT-001', minOrderValue: '$5,000', leadTime: '7-14 days',
+  },
+  {
     id: '1', slug: 'al-meera-consumer-goods', name: 'Al Meera Consumer Goods',
     logo: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=200',
     description: "Al Meera is Qatar's leading retail and FMCG distribution company, supplying over 500 retail outlets across Qatar and the GCC.",
