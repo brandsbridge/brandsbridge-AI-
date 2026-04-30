@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
@@ -80,7 +80,7 @@ const CompaniesPage = () => {
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBusinessType, setSelectedBusinessType] = useState('');
   const [selectedVerification, setSelectedVerification] = useState('');
@@ -538,25 +538,160 @@ const CompaniesPage = () => {
     setShowFreightQuoteModal(true);
   };
 
-  // Filtered Companies
+  // Country multi-select dropdown state
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Unique countries derived from companies — { name, flag }
+  const availableCountries = useMemo(() => {
+    const map = new Map<string, string>();
+    companies.forEach((c) => {
+      if (!map.has(c.country)) map.set(c.country, c.countryFlag);
+    });
+    return Array.from(map.entries())
+      .map(([name, flag]) => ({ name, flag }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  // Filter visible options by the in-dropdown search box
+  const visibleCountries = useMemo(() => {
+    const q = countrySearch.trim().toLowerCase();
+    if (!q) return availableCountries;
+    return availableCountries.filter((c) => c.name.toLowerCase().includes(q));
+  }, [availableCountries, countrySearch]);
+
+  // Click-outside to close the country dropdown
+  useEffect(() => {
+    if (!isCountryDropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
+        setIsCountryDropdownOpen(false);
+        setCountrySearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isCountryDropdownOpen]);
+
+  // Trigger label: empty / single (with flag) / multi summary
+  const countryTriggerLabel = (() => {
+    if (selectedCountries.length === 0) return 'All Countries';
+    if (selectedCountries.length === 1) {
+      const c = availableCountries.find((x) => x.name === selectedCountries[0]);
+      return c ? `${c.flag} ${c.name}` : selectedCountries[0];
+    }
+    const first = availableCountries.find((x) => x.name === selectedCountries[0]);
+    const head = first ? `${first.flag} ${first.name}` : selectedCountries[0];
+    return `${head} + ${selectedCountries.length - 1} more`;
+  })();
+
+  const toggleCountry = (name: string) => {
+    setSelectedCountries((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
+  };
+
+  // Parse a minOrderValue string like "$10,000" or "$1.5K" into USD number, or null if missing/unparseable
+  const parseMinOrderUSD = (str?: string): number | null => {
+    if (!str) return null;
+    const cleaned = str.replace(/[$,\s]/g, '');
+    const match = cleaned.match(/^([\d.]+)([KkMm])?/);
+    if (!match) return null;
+    const num = parseFloat(match[1]);
+    if (isNaN(num)) return null;
+    const suffix = match[2]?.toLowerCase();
+    if (suffix === 'k') return num * 1_000;
+    if (suffix === 'm') return num * 1_000_000;
+    return num;
+  };
+
+  // Filtered Companies — wires all 8 sidebar filters
   const filteredCompanies = useMemo(() => {
     return companies.filter((company) => {
+      // 1. Search across name, description, categories
+      const q = searchQuery.toLowerCase();
       const matchesSearch = searchQuery === '' ||
-        company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        company.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        company.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
+        company.name.toLowerCase().includes(q) ||
+        company.description.toLowerCase().includes(q) ||
+        company.categories.some(cat => cat.toLowerCase().includes(q));
 
-      const matchesCountry = selectedCountry === '' || company.country === selectedCountry;
+      // 2. Country (multi-select OR — match any selected)
+      const matchesCountry = selectedCountries.length === 0 || selectedCountries.includes(company.country);
+
+      // 3. Category
       const matchesCategory = selectedCategory === '' || company.categories.some(cat => cat.includes(selectedCategory));
+
+      // 4. Business type
       const matchesBusinessType = selectedBusinessType === '' || company.businessType === selectedBusinessType;
 
-      return matchesSearch && matchesCountry && matchesCategory && matchesBusinessType;
+      // 5. Verification — maps each option to a different field
+      let matchesVerification = true;
+      if (selectedVerification && selectedVerification !== 'All') {
+        if (selectedVerification === 'KYB Verified') {
+          matchesVerification = company.kybStatus === 'verified';
+        } else if (selectedVerification === 'ISO Certified') {
+          matchesVerification = company.certifications.some(c => c.toLowerCase().includes('iso'));
+        } else if (selectedVerification === 'Premium Partner') {
+          matchesVerification = company.subscriptionPlan === 'Premium' || company.subscriptionPlan === 'Expo';
+        }
+      }
+
+      // 6. Export Capacity — buckets on monthlyContainers
+      let matchesExportCapacity = true;
+      if (selectedExportCapacity && selectedExportCapacity !== 'All') {
+        const n = company.monthlyContainers;
+        if (n == null) {
+          matchesExportCapacity = false;
+        } else if (selectedExportCapacity === '1-50 containers/month') {
+          matchesExportCapacity = n >= 1 && n <= 50;
+        } else if (selectedExportCapacity === '50-200 containers/month') {
+          matchesExportCapacity = n > 50 && n <= 200;
+        } else if (selectedExportCapacity === '200+ containers/month') {
+          matchesExportCapacity = n > 200;
+        }
+      }
+
+      // 7. MOQ — buckets on parsed minOrderValue (USD)
+      let matchesMOQ = true;
+      if (selectedMOQ && selectedMOQ !== 'All') {
+        const usd = parseMinOrderUSD(company.minOrderValue);
+        if (usd == null) {
+          matchesMOQ = false;
+        } else if (selectedMOQ === '< $1,000') {
+          matchesMOQ = usd < 1_000;
+        } else if (selectedMOQ === '$1,000 - $10,000') {
+          matchesMOQ = usd >= 1_000 && usd <= 10_000;
+        } else if (selectedMOQ === '$10,000 - $50,000') {
+          matchesMOQ = usd > 10_000 && usd <= 50_000;
+        } else if (selectedMOQ === '> $50,000') {
+          matchesMOQ = usd > 50_000;
+        }
+      }
+
+      // 8. Logistics Readiness — NO-OP for now
+      // TODO: Logistics dropdown values are Incoterms (FOB/CIF/DDP/Multi-modal), but Company has
+      // no Incoterm field. paymentTerms holds payment instruments ('LC at Sight', 'TT 30% advance'),
+      // not shipping terms. Add a `incoterms?: string[]` field to Company and populate mockData
+      // before wiring this filter.
+      const matchesLogistics = true;
+
+      return (
+        matchesSearch &&
+        matchesCountry &&
+        matchesCategory &&
+        matchesBusinessType &&
+        matchesVerification &&
+        matchesExportCapacity &&
+        matchesMOQ &&
+        matchesLogistics
+      );
     });
-  }, [searchQuery, selectedCountry, selectedCategory, selectedBusinessType]);
+  }, [searchQuery, selectedCountries, selectedCategory, selectedBusinessType, selectedVerification, selectedExportCapacity, selectedMOQ, selectedLogistics]);
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCountry('');
+    setSelectedCountries([]);
     setSelectedCategory('');
     setSelectedBusinessType('');
     setSelectedVerification('');
@@ -565,7 +700,9 @@ const CompaniesPage = () => {
     setSelectedLogistics('');
   };
 
-  const activeFiltersCount = [selectedCountry, selectedCategory, selectedBusinessType, selectedVerification, selectedExportCapacity, selectedMOQ, selectedLogistics].filter(Boolean).length;
+  const activeFiltersCount =
+    (selectedCountries.length > 0 ? 1 : 0) +
+    [selectedCategory, selectedBusinessType, selectedVerification, selectedExportCapacity, selectedMOQ, selectedLogistics].filter(Boolean).length;
 
   return (
     <div className="min-h-screen" style={{ background: '#050D1A' }}>
@@ -972,6 +1109,83 @@ const CompaniesPage = () => {
                   )}
                 </div>
 
+                {/* Country (multi-select) */}
+                <div className="mb-6" ref={countryDropdownRef}>
+                  <label className="block text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-400" />
+                    Country
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryDropdownOpen((open) => !open)}
+                      className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <span className={`truncate ${selectedCountries.length === 0 ? 'text-slate-400' : 'text-white'}`}>
+                        {countryTriggerLabel}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 flex-shrink-0 text-slate-400 transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isCountryDropdownOpen && (
+                      <div className="absolute z-20 mt-2 left-0 right-0 bg-slate-800 border border-slate-600/70 rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
+                        {/* Search */}
+                        <div className="p-2 border-b border-slate-700/60">
+                          <div className="relative">
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <input
+                              type="text"
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                              placeholder="Search country…"
+                              className="w-full pl-9 pr-3 py-2 bg-slate-900/60 border border-slate-700/60 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                        {/* Options */}
+                        <div className="max-h-64 overflow-y-auto py-1">
+                          {visibleCountries.length === 0 && (
+                            <div className="px-4 py-3 text-sm text-slate-500">No countries match.</div>
+                          )}
+                          {visibleCountries.map((c) => {
+                            const checked = selectedCountries.includes(c.name);
+                            return (
+                              <label
+                                key={c.name}
+                                className="flex items-center gap-3 px-3 py-2 hover:bg-slate-700/60 cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleCountry(c.name)}
+                                  className="w-4 h-4 text-blue-500 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-base leading-none">{c.flag}</span>
+                                <span className={`text-sm ${checked ? 'text-white font-medium' : 'text-slate-300'}`}>{c.name}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        {/* Footer — only when 1+ selected */}
+                        {selectedCountries.length > 0 && (
+                          <div className="flex items-center justify-between px-3 py-2 border-t border-slate-700/60 bg-slate-900/40">
+                            <span className="text-xs text-slate-400">
+                              {selectedCountries.length} selected
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCountries([])}
+                              className="text-xs text-blue-400 hover:text-blue-300"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Verification Status */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
@@ -1092,7 +1306,11 @@ const CompaniesPage = () => {
                   {/* Default text when no search */}
                   {!hasSearched && !isSearching && (
                     <div style={{ color: '#94A3B8' }}>
-                      <span style={{ fontWeight: 600, color: '#F8FAFC' }}>{filteredCompanies.length}</span> verified suppliers found
+                      Showing{' '}
+                      <span style={{ fontWeight: 600, color: '#F8FAFC' }}>{filteredCompanies.length}</span>
+                      {' '}of{' '}
+                      <span style={{ fontWeight: 600, color: '#F8FAFC' }}>{companies.length}</span>
+                      {' '}verified suppliers
                     </div>
                   )}
                   {/* Clear search button when searched */}
@@ -1189,39 +1407,79 @@ const CompaniesPage = () => {
                 </div>
               </div>
 
-              {/* Active Filters */}
-              {activeFiltersCount > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {selectedVerification && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-sm">
-                      <Shield className="w-3 h-3" />
-                      {selectedVerification}
-                      <button onClick={() => setSelectedVerification('')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                  {selectedCountry && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-sm">
-                      <Globe className="w-3 h-3" />
-                      {selectedCountry}
-                      <button onClick={() => setSelectedCountry('')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                  {selectedCategory && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-sm">
-                      <Package className="w-3 h-3" />
-                      {selectedCategory}
-                      <button onClick={() => setSelectedCategory('')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                  {selectedBusinessType && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-sm">
-                      <Building2 className="w-3 h-3" />
-                      {selectedBusinessType}
-                      <button onClick={() => setSelectedBusinessType('')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                </div>
-              )}
+              {/* Active Filters — visual chip count includes search + each country individually */}
+              {(() => {
+                const visibleChipCount =
+                  (searchQuery ? 1 : 0) +
+                  selectedCountries.length +
+                  (selectedVerification ? 1 : 0) +
+                  (selectedCategory ? 1 : 0) +
+                  (selectedBusinessType ? 1 : 0) +
+                  (selectedExportCapacity ? 1 : 0) +
+                  (selectedMOQ ? 1 : 0);
+                if (visibleChipCount === 0) return null;
+                return (
+                  <div className="flex flex-wrap items-center gap-2 mb-6">
+                    {searchQuery && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-slate-500/20 text-slate-300 border border-slate-500/30 rounded-full text-sm">
+                        <Search className="w-3 h-3" />
+                        "{searchQuery}"
+                        <button onClick={() => setSearchQuery('')} aria-label="Clear search"><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {selectedVerification && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-sm">
+                        <Shield className="w-3 h-3" />
+                        {selectedVerification}
+                        <button onClick={() => setSelectedVerification('')} aria-label={`Remove ${selectedVerification} filter`}><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {selectedCountries.map((c) => (
+                      <span key={c} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-sm">
+                        <Globe className="w-3 h-3" />
+                        {c}
+                        <button onClick={() => setSelectedCountries((prev) => prev.filter((x) => x !== c))} aria-label={`Remove ${c} filter`}><X className="w-3 h-3" /></button>
+                      </span>
+                    ))}
+                    {selectedCategory && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-sm">
+                        <Package className="w-3 h-3" />
+                        {selectedCategory}
+                        <button onClick={() => setSelectedCategory('')} aria-label={`Remove ${selectedCategory} filter`}><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {selectedBusinessType && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-sm">
+                        <Building2 className="w-3 h-3" />
+                        {selectedBusinessType}
+                        <button onClick={() => setSelectedBusinessType('')} aria-label={`Remove ${selectedBusinessType} filter`}><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {selectedExportCapacity && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full text-sm">
+                        <Truck className="w-3 h-3" />
+                        {selectedExportCapacity}
+                        <button onClick={() => setSelectedExportCapacity('')} aria-label={`Remove ${selectedExportCapacity} filter`}><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {selectedMOQ && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-pink-500/20 text-pink-400 border border-pink-500/30 rounded-full text-sm">
+                        <DollarSign className="w-3 h-3" />
+                        MOQ: {selectedMOQ}
+                        <button onClick={() => setSelectedMOQ('')} aria-label="Remove MOQ filter"><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {visibleChipCount >= 2 && (
+                      <button
+                        onClick={clearFilters}
+                        className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/40 rounded-full transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Loading Skeleton */}
               {isSearching && (
