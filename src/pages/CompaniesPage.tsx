@@ -45,6 +45,7 @@ import {
 import { companies, categories, countries, Company, threePLCompanies, cargoAuctions } from '../data/mockData';
 import { calculateAIReliability, getRatingDisplay } from '../lib/companyMetrics';
 import VirtualBoothModal from '../components/VirtualBoothModal';
+import AIInquiryModal from '../components/AIInquiryModal';
 
 type TabType = 'suppliers' | 'live' | 'shipping' | 'cargo' | 'categories';
 
@@ -92,6 +93,7 @@ const CompaniesPage = () => {
 
   // Modal States
   const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [showAIInquiry, setShowAIInquiry] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showFreightQuoteModal, setShowFreightQuoteModal] = useState(false);
@@ -516,7 +518,7 @@ const CompaniesPage = () => {
   // Handle Direct Actions
   const handleSendInquiry = (company: Company) => {
     setSelectedCompany(company);
-    setShowInquiryModal(true);
+    setShowAIInquiry(true);
   };
 
   const handleRequestQuote = (company: Company) => {
@@ -2309,6 +2311,22 @@ const CompaniesPage = () => {
         />
       )}
 
+      {/* AI Inquiry Modal — Phase 3, replaces ExportInquiryModal trigger */}
+      {selectedCompany && (
+        <AIInquiryModal
+          isOpen={showAIInquiry}
+          onClose={() => setShowAIInquiry(false)}
+          supplier={{
+            id: selectedCompany.id,
+            name: selectedCompany.name,
+            email: selectedCompany.internationalSalesEmail || selectedCompany.email,
+            country: selectedCompany.country,
+            categories: selectedCompany.categories,
+            certifications: selectedCompany.certifications,
+          }}
+        />
+      )}
+
       {/* Request Quote Modal */}
       {showQuoteModal && selectedCompany && (
         <RequestQuoteModal
@@ -2786,7 +2804,7 @@ const ExportInquiryModal = ({
 };
 
 // Request Quote Modal
-const RequestQuoteModal = ({ company, onClose }: { company: Company; onClose: () => void }) => {
+export const RequestQuoteModal = ({ company, onClose }: { company: Company; onClose: () => void }) => {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-800 rounded-2xl border border-amber-500/30 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">

@@ -578,9 +578,11 @@ export const companies: Company[] = [
     certifications: ['Halal', 'ISO 22000'],
     website: 'https://brandsbridgetrading.com',
     whatsapp: '',
-    email: 'info@brandsbridgetrading.com',
-    exportManager: { name: '', email: 'info@brandsbridgetrading.com', whatsapp: '' },
-    salesManager:  { name: '', email: 'info@brandsbridgetrading.com' },
+    // TEMP: Resend sandbox restriction. Revert to info@brandsbridgetrading.com
+    // after DNS verification for production domain.
+    email: 'info@brandsbridge.net',
+    exportManager: { name: '', email: 'info@brandsbridge.net', whatsapp: '' },
+    salesManager:  { name: '', email: 'info@brandsbridge.net' },
     gallery: ['https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600'],
     featured: true, verified: true, subscriptionPlan: 'Expo', joinDate: '2026-05-01',
     boothNumber: 'BBT-001', minOrderValue: '$5,000', leadTime: '7-14 days',

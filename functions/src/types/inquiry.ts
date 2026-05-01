@@ -1,6 +1,22 @@
 import { Timestamp } from "firebase-admin/firestore";
 
 /**
+ * Buyer identity passed in by the client (Anonymous Auth flow).
+ * Both callables prefer this over Firebase Auth token claims so that
+ * unauthenticated-but-anon-signed-in users can identify themselves
+ * via a lightweight form rather than a full sign-up.
+ *
+ * `phone` is optional; everything else is required by the form.
+ */
+export interface BuyerInfo {
+  name: string;
+  email: string;
+  company: string;
+  country: string;
+  phone?: string;
+}
+
+/**
  * Lifecycle of an inquiry document.
  *
  *   draft     → created by sendInquiry before the email send is attempted
@@ -33,6 +49,7 @@ export interface Inquiry {
   buyerName: string;
   buyerCompany?: string;
   buyerCountry?: string;
+  buyerPhone?: string;
 
   // Target (supplier)
   supplierId: string;            // Company ID from mockData/companies seed

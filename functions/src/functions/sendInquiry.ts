@@ -9,7 +9,7 @@ import {
   buildInquiryEmailText,
   INQUIRY_EMAIL_TEMPLATE_VERSION,
 } from "../templates/inquiryEmailV1";
-import type { Inquiry, InquiryStatus } from "../types/inquiry";
+import type { BuyerInfo, Inquiry, InquiryStatus } from "../types/inquiry";
 
 /**
  * Sender identity for Resend. Hardcoded to the resend.dev test domain
@@ -25,6 +25,7 @@ interface SendInquiryData {
     country: string;
     uid?: string;
   };
+  buyer?: BuyerInfo;
   subject: string;
   message: string;
   editedByUser: boolean;
@@ -104,16 +105,33 @@ export const sendInquiry = onCall(
     const token = request.auth.token;
 
     const buyerId = request.auth.uid;
-    const buyerEmail = (token.email as string | undefined) || "";
+    const payloadBuyer = data.buyer;
+
+    // Payload-first, token-fallback. Email is the last line of defense —
+    // fail closed if neither source has a valid address.
+    const buyerEmail =
+      payloadBuyer?.email ||
+      (token.email as string | undefined) ||
+      "";
     if (!isEmail(buyerEmail)) {
       throw new HttpsError(
         "failed-precondition",
-        "Your account email is missing or invalid. Update your profile and try again.",
+        "Buyer email is required to send an inquiry.",
       );
     }
-    const buyerName = (token.name as string | undefined) || "Buyer";
-    const buyerCompany = (token.companyName as string | undefined) || undefined;
-    const buyerCountry = (token.country as string | undefined) || undefined;
+    const buyerName =
+      payloadBuyer?.name ||
+      (token.name as string | undefined) ||
+      "Buyer";
+    const buyerCompany =
+      payloadBuyer?.company ||
+      (token.companyName as string | undefined) ||
+      undefined;
+    const buyerCountry =
+      payloadBuyer?.country ||
+      (token.country as string | undefined) ||
+      undefined;
+    const buyerPhone = payloadBuyer?.phone || undefined;
 
     const db = getFirestore();
     const docRef = db.collection("inquiries").doc();
@@ -126,6 +144,7 @@ export const sendInquiry = onCall(
       buyerName,
       buyerCompany,
       buyerCountry,
+      buyerPhone,
 
       supplierId: data.supplier.id,
       supplierUid: data.supplier.uid,

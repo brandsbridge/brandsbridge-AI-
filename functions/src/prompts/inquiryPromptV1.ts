@@ -5,7 +5,7 @@
  * inquiry document records the prompt version used to draft it,
  * so we can A/B compare quality across iterations.
  */
-export const INQUIRY_PROMPT_VERSION = "v1";
+export const INQUIRY_PROMPT_VERSION = "v2";
 
 export interface InquiryPromptInput {
   buyer: {
@@ -13,6 +13,7 @@ export interface InquiryPromptInput {
     company?: string;
     country?: string;
     email: string;
+    phone?: string;
   };
   supplier: {
     name: string;
@@ -41,12 +42,12 @@ REQUIRED ELEMENTS
    b) MOQ (minimum order quantity)
    c) Lead time
 6. Compliance question: If the supplier's categories include food items (Dairy, Beverages, Confectionery, Groceries, Frozen, Bakery, Snacks, Coffee, Tea, Spices, Oils), ask about Halal certification and food safety (ISO 22000 / HACCP). For non-food categories, ask about relevant certifications instead.
-7. Sign-off: "Best regards, [Buyer Company]" — use the buyer's COMPANY name, not personal name.
+7. Sign-off: End the body with the literal SIGNATURE block provided in the user message. Use it VERBATIM — do not modify, reformat, or paraphrase. Separate it from the preceding paragraph by a blank line.
 
 NEVER
 - Invent product names, SKUs, or brand names
 - Promise specific volume commitments
-- Include phone numbers or personal contact details
+- Invent phone numbers, addresses, or contact details not provided in the SIGNATURE block
 - Use "I am writing to inquire about..." or other clichéd openers
 - Use emojis or special characters
 - Reference Brands Bridge in the body (the platform context is already understood)
@@ -59,6 +60,20 @@ Return ONLY valid JSON, no markdown fences:
 }
 
 In the body, use \\n for line breaks between paragraphs. No markdown formatting in the body.`;
+
+/**
+ * Compose the literal sign-off block from the buyer's identity.
+ * The AI is instructed to copy this verbatim — assembling it in code
+ * removes the failure mode of the model hallucinating contact details.
+ */
+function buildSignature(buyer: InquiryPromptInput["buyer"]): string {
+  const lines = ["Best regards,", buyer.name];
+  if (buyer.company) lines.push(buyer.company);
+  if (buyer.country) lines.push(buyer.country);
+  lines.push(buyer.email);
+  if (buyer.phone) lines.push(buyer.phone);
+  return lines.join("\n");
+}
 
 /**
  * Build the user-role message that pairs with INQUIRY_SYSTEM_PROMPT.
@@ -75,6 +90,7 @@ export function buildInquiryUserPrompt(input: InquiryPromptInput): string {
   const intentLine = intent && intent.trim().length > 0
     ? intent
     : "Standard procurement inquiry — no specific product yet.";
+  const signature = buildSignature(buyer);
 
   return `Generate an inquiry message with these inputs:
 
@@ -92,5 +108,8 @@ SUPPLIER
 ADDITIONAL CONTEXT
 ${intentLine}
 
-Return strictly valid JSON with "subject" and "body" only.`;
+SIGNATURE (use VERBATIM at end of body — do not modify, reformat, or paraphrase)
+${signature}
+
+Return strictly valid JSON with "subject" and "body" only. The body must end with the SIGNATURE block above, on its own lines, preceded by a blank line.`;
 }

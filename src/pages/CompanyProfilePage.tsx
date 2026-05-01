@@ -26,15 +26,20 @@ import {
   Clock,
   AlertTriangle,
   HelpCircle,
-  Award
+  Award,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import { companies, Company } from '../data/mockData';
 import { calculateAIReliability, getReliabilityBreakdown, getRatingDisplay, type ReliabilityFactors } from '../lib/companyMetrics';
+import { useAuth } from '../context/AuthContext';
 import MeetingRequestModal from '../components/MeetingRequestModal';
 import EmailInquiryModal from '../components/EmailInquiryModal';
 import BackButton from '../components/BackButton';
 import Breadcrumb from '../components/Breadcrumb';
 import VirtualBoothModal from '../components/VirtualBoothModal';
+import { RequestQuoteModal } from './CompaniesPage';
+import AIInquiryModal from '../components/AIInquiryModal';
 
 const reliabilityBarColor = (score: number): string => {
   if (score >= 80) return '#10B981';
@@ -78,6 +83,10 @@ const CompanyProfilePage = () => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [showVirtualBooth, setShowVirtualBooth] = useState(false);
   const [activeTab, setActiveTab] = useState<'about' | 'products' | 'certifications'>('about');
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const [showAIInquiry, setShowAIInquiry] = useState(false);
 
   if (!company) {
     return (
@@ -353,7 +362,7 @@ const CompanyProfilePage = () => {
             {/* Action Cards Grid */}
             <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => setIsEmailModalOpen(true)}
+                onClick={() => setShowAIInquiry(true)}
                 className="group relative p-5 bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-2xl text-left overflow-hidden transition-all hover:from-blue-500/30 hover:to-blue-600/30 hover:border-blue-500/50"
               >
                 <div className="flex items-center gap-4">
@@ -367,7 +376,10 @@ const CompanyProfilePage = () => {
                 </div>
               </button>
 
-              <button className="group relative p-5 bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-2xl text-left overflow-hidden transition-all hover:from-amber-500/30 hover:to-amber-600/30 hover:border-amber-500/50">
+              <button
+                onClick={() => setShowQuoteModal(true)}
+                className="group relative p-5 bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-2xl text-left overflow-hidden transition-all hover:from-amber-500/30 hover:to-amber-600/30 hover:border-amber-500/50"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center group-hover:bg-amber-500/30 transition-colors">
                     <FileText className="w-6 h-6 text-amber-400" />
@@ -394,7 +406,10 @@ const CompanyProfilePage = () => {
                 </div>
               </button>
 
-              <button className="group relative p-5 bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-2xl text-left overflow-hidden transition-all hover:from-emerald-500/30 hover:to-emerald-600/30 hover:border-emerald-500/50">
+              <button
+                onClick={() => setShowCallModal(true)}
+                className="group relative p-5 bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-2xl text-left overflow-hidden transition-all hover:from-emerald-500/30 hover:to-emerald-600/30 hover:border-emerald-500/50"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center group-hover:bg-emerald-500/30 transition-colors">
                     <Phone className="w-6 h-6 text-emerald-400" />
@@ -685,6 +700,22 @@ const CompanyProfilePage = () => {
         />
       )}
 
+      {/* AI Inquiry Modal — Phase 2/3, replaces EmailInquiryModal trigger */}
+      {company && (
+        <AIInquiryModal
+          isOpen={showAIInquiry}
+          onClose={() => setShowAIInquiry(false)}
+          supplier={{
+            id: company.id,
+            name: company.name,
+            email: company.internationalSalesEmail || company.email,
+            country: company.country,
+            categories: company.categories,
+            certifications: company.certifications,
+          }}
+        />
+      )}
+
       {/* Virtual Booth Modal */}
       {company && showVirtualBooth && (
         <VirtualBoothModal
@@ -692,6 +723,190 @@ const CompanyProfilePage = () => {
           onClose={() => setShowVirtualBooth(false)}
         />
       )}
+
+      {/* Request Quote Modal — auth gated */}
+      {showQuoteModal && (
+        isAuthenticated ? (
+          <RequestQuoteModal
+            company={company}
+            onClose={() => setShowQuoteModal(false)}
+          />
+        ) : (
+          <SignInRequiredModal
+            title="Sign in to request a quote"
+            message="Create a free Brands Bridge account to send RFQs and receive pricing directly from verified suppliers."
+            onClose={() => setShowQuoteModal(false)}
+          />
+        )
+      )}
+
+      {/* Call Export Manager Modal — auth gated */}
+      {showCallModal && (
+        isAuthenticated ? (
+          <ContactExportManagerModal
+            company={company}
+            onClose={() => setShowCallModal(false)}
+          />
+        ) : (
+          <SignInRequiredModal
+            title="Sign in to contact this supplier"
+            message="Sign in to view direct contact details for the export manager and start the conversation."
+            onClose={() => setShowCallModal(false)}
+          />
+        )
+      )}
+    </div>
+  );
+};
+
+// Generic auth-gate modal — used when guests click Request Quote or Call Export Manager
+const SignInRequiredModal = ({ title, message, onClose }: { title: string; message?: string; onClose: () => void }) => {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="bg-slate-800 rounded-2xl border border-amber-500/30 w-full max-w-md shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center">
+              <Lock className="w-6 h-6 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">{title}</h3>
+              <p className="text-slate-400 text-sm">Sign in to continue</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white" aria-label="Close">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-slate-300 text-sm leading-relaxed">
+            {message ?? 'Your free Brands Bridge account unlocks direct contact with verified suppliers and lets you send RFQs and inquiries.'}
+          </p>
+          <div className="flex flex-col gap-2 pt-2">
+            <Link
+              to="/login"
+              onClick={onClose}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-[#0A0F1E] font-semibold rounded-xl hover:from-[#D4AF37]/90 hover:to-[#B8962E]/90 transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign in
+            </Link>
+            <Link
+              to="/register"
+              onClick={onClose}
+              className="text-center text-sm text-slate-400 hover:text-amber-300 py-2"
+            >
+              Don't have an account? <span className="font-medium">Sign up</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Contact options modal for the "Call Export Manager" button — phone / email / WhatsApp rows
+const ContactExportManagerModal = ({ company, onClose }: { company: Company; onClose: () => void }) => {
+  const phone = company.exportManager?.whatsapp || company.whatsapp;
+  const email = company.exportManager?.email || company.internationalSalesEmail || company.email;
+  const whatsappRaw = company.whatsapp || company.exportManager?.whatsapp;
+  const whatsappDigits = whatsappRaw?.replace(/[^0-9]/g, '');
+  const managerName = company.exportManager?.name || company.contactPerson?.name;
+  const subject = encodeURIComponent(`Inquiry from Brands Bridge — ${company.name}`);
+  const waText = encodeURIComponent(`Hello, I found ${company.name} on Brands Bridge and would like to discuss a potential order.`);
+
+  const hasAny = Boolean(phone || email || whatsappDigits);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="bg-slate-800 rounded-2xl border border-emerald-500/30 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+              <Phone className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Contact Export Manager</h3>
+              <p className="text-slate-400 text-sm">
+                {managerName ? `${managerName} · ${company.name}` : company.name}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white" aria-label="Close">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-3">
+          {!hasAny && (
+            <p className="text-slate-400 text-sm">
+              No direct contact details published for this company yet.
+            </p>
+          )}
+
+          {phone && (
+            <a
+              href={`tel:${phone.replace(/\s/g, '')}`}
+              className="flex items-center justify-between gap-3 p-4 bg-slate-700/40 border border-slate-600/40 rounded-xl hover:border-emerald-500/40 hover:bg-slate-700/60 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-emerald-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-white font-medium text-sm">Phone</div>
+                  <div className="text-slate-400 text-sm truncate">{phone}</div>
+                </div>
+              </div>
+              <span className="text-emerald-400 text-sm font-medium flex-shrink-0">Call</span>
+            </a>
+          )}
+
+          {email && (
+            <a
+              href={`mailto:${email}?subject=${subject}`}
+              className="flex items-center justify-between gap-3 p-4 bg-slate-700/40 border border-slate-600/40 rounded-xl hover:border-blue-500/40 hover:bg-slate-700/60 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-blue-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-white font-medium text-sm">Email</div>
+                  <div className="text-slate-400 text-sm truncate">{email}</div>
+                </div>
+              </div>
+              <span className="text-blue-400 text-sm font-medium flex-shrink-0">Send email</span>
+            </a>
+          )}
+
+          {whatsappDigits && (
+            <a
+              href={`https://wa.me/${whatsappDigits}?text=${waText}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-3 p-4 bg-slate-700/40 border border-slate-600/40 rounded-xl hover:border-green-500/40 hover:bg-slate-700/60 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-green-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-5 h-5 text-green-400" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-white font-medium text-sm">WhatsApp</div>
+                  <div className="text-slate-400 text-sm">Quick chat</div>
+                </div>
+              </div>
+              <span className="text-green-400 text-sm font-medium flex-shrink-0">Open WhatsApp</span>
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

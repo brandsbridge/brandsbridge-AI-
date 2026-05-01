@@ -11,6 +11,7 @@ import {
   buildInquiryUserPrompt,
   type InquiryPromptInput,
 } from "../prompts/inquiryPromptV1";
+import type { BuyerInfo } from "../types/inquiry";
 
 interface GenerateInquiryDraftData {
   supplier: {
@@ -20,10 +21,7 @@ interface GenerateInquiryDraftData {
     categories: string[];
     certifications?: string[];
   };
-  buyer?: {
-    company?: string;
-    country?: string;
-  };
+  buyer?: BuyerInfo;
   intent?: string;
 }
 
@@ -117,19 +115,36 @@ export const generateInquiryDraft = onCall(
 
     const data = validate(request.data);
     const token = request.auth.token;
+    const payloadBuyer = data.buyer;
+
+    // Payload-first, token-fallback. Anonymous Auth users have no
+    // name/email/companyName/country claims — payload is the only source.
+    const buyerName =
+      payloadBuyer?.name ||
+      (token.name as string | undefined) ||
+      "Buyer";
+    const buyerEmail =
+      payloadBuyer?.email ||
+      (token.email as string | undefined) ||
+      "";
+    const buyerCompany =
+      payloadBuyer?.company ||
+      (token.companyName as string | undefined) ||
+      "";
+    const buyerCountry =
+      payloadBuyer?.country ||
+      (token.country as string | undefined) ||
+      "";
+    // Phone is payload-only — never on the auth token.
+    const buyerPhone = payloadBuyer?.phone || "";
 
     const input: InquiryPromptInput = {
       buyer: {
-        name: (token.name as string | undefined) || "Buyer",
-        company:
-          data.buyer?.company ||
-          (token.companyName as string | undefined) ||
-          undefined,
-        country:
-          data.buyer?.country ||
-          (token.country as string | undefined) ||
-          undefined,
-        email: (token.email as string | undefined) || "",
+        name: buyerName,
+        company: buyerCompany || undefined,
+        country: buyerCountry || undefined,
+        email: buyerEmail,
+        phone: buyerPhone || undefined,
       },
       supplier: {
         name: data.supplier.name,

@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, ArrowLeft, MapPin, Calendar, Users, Globe, Package, Play, Factory, Grid3X3, Map, Star, CheckCircle, Phone, Mail, MessageCircle, Video, ExternalLink, Share2, Heart, Download, Clock, ChevronRight, Compass } from 'lucide-react';
+import { X, ArrowLeft, MapPin, Calendar, Users, Globe, Package, Play, Factory, Grid3X3, Map, Star, CheckCircle, Phone, Mail, MessageCircle, Video, ExternalLink, Share2, Heart, Download, Clock, ChevronRight, Compass, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Company } from '../data/mockData';
 import { getRatingDisplay } from '../lib/companyMetrics';
+import AIInquiryModal from './AIInquiryModal';
 
 interface VirtualBoothModalProps {
   company: Company;
@@ -18,6 +19,7 @@ const VirtualBoothModal = ({ company, onClose }: VirtualBoothModalProps) => {
   const [startPos, setStartPos] = useState({ x: 0 });
   const [showDragHint, setShowDragHint] = useState(true);
   const [compassAngle, setCompassAngle] = useState(0);
+  const [showAIInquiry, setShowAIInquiry] = useState(false);
 
   // Hotspots for factory tour
   const hotspots = [
@@ -455,6 +457,12 @@ const VirtualBoothModal = ({ company, onClose }: VirtualBoothModalProps) => {
               </div>
             </div>
             <div className="space-y-2">
+              <button
+                onClick={() => setShowAIInquiry(true)}
+                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
+              >
+                <Sparkles className="w-4 h-4" /> Send AI Inquiry
+              </button>
               <a href={`https://wa.me/${company.whatsapp?.replace(/[^0-9]/g, '')}`} className="w-full py-2.5 bg-[#25D366] text-white rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
                 <MessageCircle className="w-4 h-4" /> WhatsApp
               </a>
@@ -549,6 +557,20 @@ const VirtualBoothModal = ({ company, onClose }: VirtualBoothModalProps) => {
         }
         .animate-fadeIn { animation: fadeIn 0.25s ease forwards; }
       `}</style>
+
+      {/* AI Inquiry Modal — Phase 3, self-contained inside VirtualBoothModal */}
+      <AIInquiryModal
+        isOpen={showAIInquiry}
+        onClose={() => setShowAIInquiry(false)}
+        supplier={{
+          id: company.id,
+          name: company.name,
+          email: company.internationalSalesEmail || company.email,
+          country: company.country,
+          categories: company.categories,
+          certifications: company.certifications,
+        }}
+      />
     </div>
   );
 };
